@@ -1,0 +1,1360 @@
+/* Shared editorial typography and layouts for the five site pages. */
+@font-face {
+  font-family: "Instrument Serif";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("https://fonts.gstatic.com/s/instrumentserif/v5/jizHRFtNs2ka5fXjeivQ4LroWlx-6zAjjH7M.woff2")
+    format("woff2");
+}
+@font-face {
+  font-family: "Fragment Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("https://fonts.gstatic.com/s/fragmentmono/v6/4iCr6K5wfMRRjxp0DA6-2CLnB4NHhg.woff2")
+    format("woff2");
+}
+
+.editorial-site {
+  --ed-accent: "Instrument Serif", Georgia, serif;
+  --ed-mono: "Fragment Mono", monospace;
+  --paper: #fafafa;
+  --ink: #151515;
+  --muted: #636363;
+  --line: #dddddd;
+  --mono: var(--ed-mono);
+  background: #fafafa;
+  color: #151515;
+  max-width: none;
+  padding: 0;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+}
+.editorial-site main {
+  overflow-x: clip;
+}
+.editorial-site ::selection {
+  background: #d9d9d9;
+  color: #000;
+}
+.editorial-site :focus-visible {
+  outline-color: #151515;
+}
+.editorial-site .site-header {
+  margin: 0 48px;
+  min-height: 90px;
+  gap: 35px;
+}
+.editorial-site .wordmark {
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 27px;
+}
+.editorial-site .wordmark-cursor {
+  color: #777;
+}
+.editorial-site .site-header nav {
+  margin-left: auto;
+  margin-right: auto;
+  gap: 35px;
+}
+.editorial-site .nav-link {
+  position: relative;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  font-family: var(--ed-display);
+  text-transform: uppercase;
+  font-size: 13px;
+  color: #666;
+  min-height: 44px;
+  padding: 10px 13px;
+}
+.editorial-site .nav-link.is-active {
+  background: none;
+  color: #111;
+}
+.editorial-site .nav-link.is-active::before {
+  content: "→";
+  position: absolute;
+  left: -6px;
+  font-family: var(--ed-mono);
+  font-size: 12px;
+}
+.editorial-site .nav-link:last-child {
+  margin-left: 0;
+}
+.editorial-site .header-note {
+  font-family: var(--ed-mono);
+  font-size: 9px;
+}
+.editorial-site .status-dot {
+  background: #222;
+  border-radius: 0;
+}
+.editorial-site .path-bar {
+  padding: 17px 48px;
+  font-family: var(--ed-mono);
+  border-bottom: 1px solid #e4e4e4;
+}
+.editorial-site .path-cursor {
+  color: #444;
+}
+.editorial-site .serif,
+.editorial-site em {
+  font-family: var(--ed-accent);
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: -0.025em;
+}
+.editorial-site h2,
+.editorial-site h3 {
+  font-family: var(--ed-display);
+  font-weight: 300;
+  letter-spacing: -0.035em;
+}
+.editorial-site .eyebrow,
+.editorial-site .section-label {
+  font-family: var(--ed-mono);
+  letter-spacing: 0.01em;
+}
+.ed-label {
+  font-family: var(--ed-mono);
+  font-size: 10px;
+  line-height: 1.6;
+  letter-spacing: 0.025em;
+  color: #666;
+}
+.ed-kicker {
+  font-family: var(--ed-accent);
+  font-style: italic;
+  font-size: 26px;
+  line-height: 1.3;
+  color: #525252;
+}
+.ed-small-square {
+  display: block;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  background: #171717;
+}
+.ed-canvas-wrap {
+  position: relative;
+  width: 100%;
+}
+.ed-canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.ed-mobile {
+  display: none;
+}
+.ed-desktop {
+  display: block;
+}
+.ed-title-lines {
+  display: flex;
+  flex-direction: column;
+}
+.ed-line-mask {
+  display: block;
+  padding: 0.2em 0;
+  margin: -0.2em 0;
+  overflow: hidden;
+}
+.ed-line-mask > span {
+  display: block;
+}
+/* First visits get the cover reveal. Internal navigation uses the page
+   dissolve, with the incoming title and description already readable. */
+@media (prefers-reduced-motion: no-preference) {
+  #main:not([data-navigated]) .ed-title-entrance .ed-line-mask > span {
+    animation: cover-line-in 850ms var(--ease-out) both;
+  }
+  #main:not([data-navigated]) .ed-hero-description {
+    animation: cover-copy-in 700ms var(--ease-out) 250ms both;
+  }
+}
+@keyframes cover-line-in {
+  from { transform: translateY(110%); opacity: 0; }
+}
+@keyframes cover-copy-in {
+  from { transform: translateY(22px); opacity: 0; }
+}
+.ed-halftone {
+  pointer-events: none;
+}
+.ed-halftone canvas {
+  display: block;
+}
+.ed-arrow {
+  object-fit: contain;
+}
+
+/* Monumental type floats over the live halftone field. */
+.ed-hero {
+  position: relative;
+  background: #fafafa;
+  border-bottom: 1px solid #ddd;
+}
+.ed-hero-background {
+  position: absolute;
+  inset: 0;
+  opacity: 0.8;
+}
+.ed-hero-topline,
+.ed-hero-bottomline {
+  position: absolute;
+  left: 48px;
+  right: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ed-hero-topline {
+  top: 30px;
+}
+.ed-hero-bottomline {
+  bottom: 26px;
+}
+.ed-hero-title {
+  position: absolute;
+  top: 145px;
+  left: 120px;
+  right: 120px;
+  text-align: center;
+}
+.ed-hero-title .ed-kicker {
+  margin-bottom: 22px;
+}
+.ed-hero h1 {
+  font-family: var(--ed-display);
+  font-size: 112px;
+  line-height: 0.99;
+  font-weight: 300;
+  letter-spacing: -0.065em;
+}
+.ed-hero h1 .ed-line-mask {
+  white-space: nowrap;
+}
+.ed-hero-community h1 {
+  font-size: 101px;
+}
+.ed-hero-description {
+  position: absolute;
+  left: 49px;
+  bottom: 125px;
+  display: flex;
+  gap: 20px;
+  align-items: start;
+  max-width: 350px;
+}
+.ed-hero-description .ed-small-square {
+  margin-top: 8px;
+}
+.ed-hero-description p {
+  font-family: var(--ed-display);
+  font-weight: 300;
+  font-size: 18px;
+  line-height: 1.45;
+  color: #444;
+}
+.ed-hero-annotation {
+  position: absolute;
+  right: 50px;
+  bottom: 127px;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+.ed-hero-annotation > span:first-child {
+  font-family: var(--ed-display);
+  font-size: 40px;
+  letter-spacing: -0.07em;
+}
+.ed-hero-annotation > span:last-child {
+  max-width: 150px;
+  font-family: var(--ed-mono);
+  font-size: 9px;
+  line-height: 1.6;
+  color: #666;
+}
+
+/* Scroll-linked manifesto: readable throughout, with a static mobile version. */
+.ed-human-story {
+  height: 220svh;
+  background: #ededed;
+  position: relative;
+}
+.ed-human-sticky {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+}
+.ed-human-canvas {
+  position: absolute;
+}
+.ed-human-top,
+.ed-human-bottom {
+  position: absolute;
+  left: 48px;
+  right: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ed-human-top {
+  top: 38px;
+}
+.ed-human-bottom {
+  bottom: 50px;
+}
+.ed-human-bottom p {
+  text-align: center;
+  font-family: var(--ed-display);
+  font-size: 17px;
+  line-height: 1.4;
+  color: #666;
+}
+.ed-statue {
+  position: absolute;
+  width: 355px;
+  height: 530px;
+  left: 579px;
+  top: 160px;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}
+.ed-human-words {
+  position: absolute;
+  top: 290px;
+  font-family: var(--ed-display);
+  font-size: 66px;
+  font-weight: 300;
+  line-height: 1.06;
+  letter-spacing: -0.055em;
+}
+.words-left {
+  left: 95px;
+  text-align: right;
+}
+.words-right {
+  left: 1010px;
+}
+.ed-human-words em {
+  font-size: 87px;
+}
+.ed-human-cross {
+  position: absolute;
+  font-family: var(--ed-mono);
+  font-size: 18px;
+  color: #aaa;
+}
+.cross-one {
+  left: 450px;
+  top: 165px;
+}
+.cross-two {
+  right: 450px;
+  bottom: 165px;
+}
+.ed-story-progress {
+  position: absolute;
+  height: 1px;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #555;
+  transform-origin: left;
+}
+
+/* Manifesto content retains INIT's story and beliefs. */
+.editorial-site .manifesto-intro {
+  padding: 100px 80px;
+  gap: 90px;
+  grid-template-columns: 1fr 2fr;
+}
+.editorial-site .manifesto-intro h2 {
+  font-size: 43px;
+  line-height: 1.15;
+  max-width: 700px;
+}
+.editorial-site .manifesto-intro p:not(.eyebrow) {
+  font-size: 15px;
+  line-height: 1.85;
+}
+.editorial-site .beliefs {
+  margin: 0 80px;
+}
+.editorial-site .belief {
+  padding: 40px 0;
+  grid-template-columns: 70px 1fr 1.1fr;
+  gap: 45px;
+}
+.editorial-site .belief h2 {
+  font-size: 30px;
+  line-height: 1.25;
+  max-width: 360px;
+}
+.editorial-site .belief p {
+  font-size: 14px;
+}
+.editorial-site .belief-number {
+  font-family: var(--ed-mono);
+}
+.editorial-site .manifesto-quote {
+  position: relative;
+  margin: 55px 0 0;
+  padding: 80px 16%;
+  text-align: center;
+  background: #f0f0f0;
+  border-block: 1px solid #ddd;
+}
+.editorial-site .manifesto-quote .eyebrow {
+  justify-content: center;
+  color: #666;
+}
+.editorial-site .manifesto-quote blockquote {
+  font-family: var(--ed-display);
+  font-size: 42px;
+  font-weight: 300;
+  line-height: 1.25;
+  margin: 35px auto;
+}
+.editorial-site .manifesto-quote blockquote span {
+  color: #555;
+  font-family: var(--ed-accent);
+  font-size: 1.18em;
+  font-style: italic;
+}
+.editorial-site .manifesto-quote figcaption {
+  color: #666;
+}
+.editorial-site .long-view {
+  padding: 90px 80px 30px;
+}
+.editorial-site .long-view h2 {
+  font-size: 40px;
+}
+.editorial-site .long-view > p:last-child {
+  font-size: 15px;
+}
+.ed-join-strip {
+  padding: 85px 80px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 27px;
+  align-items: center;
+}
+.editorial-site .ed-join-strip h2 {
+  font-size: 68px;
+  line-height: 1.02;
+}
+.ed-join-strip h2 em {
+  font-size: 1.15em;
+}
+.ed-button {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 1px;
+  min-height: 46px;
+}
+.ed-button > span {
+  display: flex;
+  align-items: center;
+  background: #171717;
+  color: #fafafa;
+  padding: 13px 18px;
+  font-family: var(--ed-mono);
+  font-size: 10px;
+  letter-spacing: 0.03em;
+}
+.ed-button > .ed-arrow {
+  box-sizing: content-box;
+  padding: 13px;
+  background: #e6e6e6;
+}
+
+/* Real work remains an open directory, never a fictional portfolio. */
+.editorial-site .build-directory {
+  margin: 48px 80px 0;
+  border-color: #d4d4d4;
+}
+.editorial-site .directory-toolbar {
+  padding: 22px 28px;
+}
+.editorial-site .directory-toolbar h2 {
+  font-family: var(--ed-mono);
+  font-size: 11px;
+  letter-spacing: 0;
+}
+.editorial-site .empty-builds {
+  position: relative;
+  padding: 75px 40px 60px 38%;
+  min-height: 510px;
+  background: #f0f0f0;
+  text-align: left;
+  align-items: flex-start;
+  justify-content: center;
+}
+.ed-empty-art {
+  position: absolute;
+  left: 7%;
+  top: 67px;
+  width: 260px;
+}
+.ed-art-label {
+  display: block;
+  text-align: center;
+  font-family: var(--ed-mono);
+  font-size: 9px;
+  color: #666;
+  margin-top: 20px;
+}
+.editorial-site .empty-builds > .eyebrow,
+.editorial-site .empty-builds h3,
+.editorial-site .empty-builds > p,
+.editorial-site .empty-builds .text-link,
+.editorial-site .empty-note {
+  background: transparent;
+}
+.editorial-site .empty-builds h3 {
+  font-size: 57px;
+  line-height: 1.08;
+  font-family: var(--ed-display);
+}
+.editorial-site .empty-builds h3 .serif {
+  font-size: 1.2em;
+}
+.editorial-site .empty-builds > p {
+  font-size: 14px;
+  max-width: 400px;
+}
+.editorial-site .empty-builds .text-link {
+  border-color: #777;
+  font-family: var(--ed-mono);
+  font-size: 11px;
+}
+.editorial-site .empty-note {
+  font-size: 9px;
+  max-width: 410px;
+}
+.editorial-site .submission-note {
+  padding: 65px 80px 90px;
+}
+.editorial-site .submission-note h2 {
+  font-size: 33px;
+}
+.editorial-site .project-art {
+  background: #ededed;
+}
+.editorial-site .project-art > svg {
+  color: #666;
+}
+.editorial-site .project-copy h3 {
+  font-size: 32px;
+}
+
+/* Community: an editorial index of people and possibilities. */
+.editorial-site .community-intro {
+  padding: 80px;
+  gap: 85px;
+}
+.editorial-site .community-mark {
+  background: #f1f1f1;
+  border-color: #ddd;
+  max-height: none;
+  overflow: visible;
+  min-width: 0;
+}
+.editorial-site .community-mark > .ed-halftone {
+  width: 100%;
+}
+.editorial-site .community-mark canvas {
+  width: 100% !important;
+  height: auto !important;
+}
+.editorial-site .community-mark .eyebrow {
+  color: #666;
+  bottom: 22px;
+  font-size: 8px;
+}
+.editorial-site .community-intro h2 {
+  font-size: 41px;
+}
+.editorial-site .community-intro p {
+  font-size: 14px;
+}
+.editorial-site .disciplines {
+  margin: 15px 80px 80px;
+}
+.editorial-site .discipline-grid > div {
+  background: #f5f5f5;
+  padding: 28px;
+}
+.editorial-site .discipline-grid h3 {
+  font-size: 27px;
+  line-height: 1.2;
+  margin-top: 40px;
+}
+.editorial-site .discipline-symbol {
+  color: #777;
+}
+.editorial-site .connection-section {
+  margin: 0 80px;
+  padding-top: 50px;
+}
+.editorial-site .connection-section > h2 {
+  font-size: 62px;
+}
+.editorial-site .steps h3 {
+  font-size: 28px;
+  line-height: 1.2;
+}
+.editorial-site .steps p {
+  font-size: 14px;
+}
+.editorial-site .community-values {
+  margin: 0 80px;
+  background: #ededed;
+}
+.editorial-site .community-values .small-cross {
+  color: #555;
+}
+
+/* A fine grid and halftone fragments frame the real Discord invitation. */
+.ed-contact-hero {
+  position: relative;
+  background: #f1f1f1;
+  border-bottom: 1px solid #d9d9d9;
+}
+.ed-grid-art {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.65;
+}
+.ed-grid-art .fx-svg {
+  position: absolute;
+  inset: 0;
+}
+.ed-grid-art .fx-svg > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.ed-grid-art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, #f1f1f1 8%, transparent 75%);
+}
+.ed-contact-topline,
+.ed-contact-bottomline {
+  position: absolute;
+  left: 48px;
+  right: 48px;
+  display: flex;
+  justify-content: space-between;
+}
+.ed-contact-topline {
+  top: 30px;
+}
+.ed-contact-bottomline {
+  bottom: 40px;
+}
+.ed-contact-bottomline > span:last-child {
+  text-align: right;
+}
+.ed-contact-title {
+  position: absolute;
+  left: 260px;
+  right: 260px;
+  top: 146px;
+  text-align: center;
+}
+.ed-contact-title .ed-kicker {
+  margin-bottom: 22px;
+}
+.ed-contact-title h1 {
+  font-family: var(--ed-display);
+  font-size: 99px;
+  font-weight: 300;
+  line-height: 0.99;
+  letter-spacing: -0.055em;
+}
+.ed-contact-center {
+  position: absolute;
+  top: 460px;
+  left: 451px;
+  width: 610px;
+  text-align: center;
+}
+.ed-contact-center > p {
+  font-family: var(--ed-display);
+  font-weight: 300;
+  font-size: 20px;
+  line-height: 1.45;
+  max-width: 440px;
+  margin: 0 auto 25px;
+  color: #555;
+}
+.ed-contact-center > .ed-label {
+  display: block;
+  margin-top: 22px;
+  font-size: 9px;
+}
+.ed-discord-card {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  padding: 22px 26px;
+  min-height: 86px;
+  width: 100%;
+  background: #f1f1f1;
+  border: 1px solid #c6c6c6;
+  transition:
+    border-color 250ms ease,
+    background-color 250ms ease,
+    box-shadow 250ms ease;
+}
+.ed-discord-card > span:not(.sr-only) {
+  flex: 1;
+  text-align: left;
+  font-family: var(--ed-display);
+  font-weight: 300;
+  font-size: 23px;
+}
+.ed-discord-card > .icon:last-of-type {
+  width: 45px;
+  height: 45px;
+  padding: 12px;
+  border: 1px solid #d3d3d3;
+}
+.ed-contact-tile {
+  position: absolute;
+  border: 1px solid #dedede;
+  background: #f1f1f1;
+}
+.tile-eye {
+  top: 380px;
+  left: 75px;
+}
+.tile-pegasus {
+  top: 485px;
+  right: 80px;
+}
+.editorial-site .join-guide {
+  padding: 80px;
+}
+.editorial-site .join-guide h2 {
+  font-size: 62px;
+}
+.editorial-site .join-guide h3 {
+  font-size: 25px;
+  line-height: 1.2;
+}
+.editorial-site .join-guide li p {
+  font-size: 14px;
+}
+.editorial-site .invite-section {
+  margin: 0 80px;
+  background: #ededed;
+  padding: 35px;
+}
+.editorial-site .invite-section h2 {
+  font-size: 27px;
+}
+.editorial-site .invite-section p,
+.editorial-site .copy-status {
+  color: #555;
+}
+.editorial-site .invite-copy button {
+  border-color: #ccc;
+}
+.editorial-site .copy-status {
+  overflow-wrap: anywhere;
+}
+.editorial-site .join-postscript {
+  padding: 45px 25px 55px;
+}
+.editorial-site .site-footer {
+  margin: 0 48px;
+}
+.editorial-site .footer-top {
+  padding: 35px 0;
+}
+.editorial-site .footer-top > p {
+  font-family: var(--ed-accent);
+  font-style: italic;
+  font-size: 20px;
+}
+.editorial-site .footer-bottom {
+  font-family: var(--ed-mono);
+  font-size: 8px;
+}
+
+/* Draw the reference's actual SVG strokes once on entry. */
+.editorial-site .fx-svg {
+  pointer-events: none;
+}
+.editorial-site .fx-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 1.4s cubic-bezier(0.65, 0, 0.35, 1)
+    calc(var(--fx-delay, 0s) + var(--fx-at, 0s));
+}
+.editorial-site .fx-svg.is-drawn .fx-draw {
+  stroke-dashoffset: 0;
+}
+.editorial-site .fx-bar {
+  opacity: 0;
+  transform: scaleY(0.95);
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s var(--ease-out);
+}
+.editorial-site .fx-svg.is-drawn .fx-bar {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .editorial-site .nav-link:hover {
+    background: none;
+    color: #000;
+  }
+  .editorial-site .text-link:hover {
+    color: #555;
+  }
+  .ed-button:hover > .ed-arrow {
+    transform: translateX(2px);
+  }
+  .ed-discord-card:hover {
+    border-color: #bcbcbc;
+    background: #f5f5f5;
+    box-shadow: 0 14px 32px -22px rgb(0 0 0 / 0.35);
+  }
+  .ed-discord-card:hover > .icon:last-of-type {
+    transform: translateX(3px);
+  }
+}
+
+/* One reference breakpoint. The art canvases scale from 440px on mobile;
+   long-form copy stays fluid so text resizing never clips its content. */
+@media (max-width: 1023px) {
+  .ed-desktop {
+    display: none;
+  }
+  .ed-mobile {
+    display: block;
+  }
+  .editorial-site .site-header {
+    margin: 0 24px;
+    padding: 22px 0 12px;
+    flex-wrap: wrap;
+    gap: 15px;
+    min-height: 110px;
+  }
+  .editorial-site .site-header .wordmark {
+    font-size: 25px;
+  }
+  .editorial-site .site-header nav {
+    width: 100%;
+    order: 2;
+    margin: 0;
+    gap: 0;
+    justify-content: space-between;
+  }
+  .editorial-site .nav-link {
+    font-size: 12px;
+    padding: 10px 6px;
+    min-height: 44px;
+  }
+  .editorial-site .nav-link.is-active::before {
+    left: -6px;
+    font-size: 9px;
+  }
+  .editorial-site .nav-link:last-child .icon {
+    display: none;
+  }
+  .editorial-site .header-note {
+    display: flex;
+    font-size: 7px;
+    margin-left: auto;
+  }
+  .editorial-site .path-bar {
+    padding: 16px 24px;
+  }
+  .editorial-site .path-bar > span:last-child {
+    font-size: 7px;
+  }
+  .ed-mobile-canvas {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+  }
+  .ed-hero .ed-mobile-canvas {
+    padding: 30px 25px;
+    min-height: 695px;
+  }
+  .ed-hero-background {
+    overflow: clip;
+    opacity: 0.75;
+  }
+  .ed-hero-background .ed-halftone {
+    position: absolute;
+    left: -550px;
+    top: 0;
+  }
+  .ed-hero-topline,
+  .ed-hero-bottomline {
+    position: relative;
+    left: auto;
+    right: auto;
+    top: auto;
+    bottom: auto;
+  }
+  .ed-hero-topline {
+    align-items: flex-start;
+    gap: 20px;
+  }
+  .ed-hero-topline > span:last-child {
+    text-align: right;
+    max-width: 120px;
+  }
+  .ed-label {
+    font-size: 10px;
+  }
+  .ed-hero-title {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    margin: 94px -5px 0;
+  }
+  .ed-hero-title .ed-kicker {
+    font-size: 24px;
+    margin-bottom: 25px;
+  }
+  .ed-hero h1 {
+    font-size: 53px;
+    line-height: 1.03;
+    letter-spacing: -0.065em;
+  }
+  .ed-hero-community h1 {
+    font-size: 38px;
+  }
+  .ed-hero-description {
+    position: relative;
+    left: auto;
+    bottom: auto;
+    margin-top: 65px;
+    width: 310px;
+    gap: 18px;
+  }
+  .ed-hero-description p {
+    font-size: 19px;
+    line-height: 1.5;
+  }
+  .ed-hero-annotation {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    margin-top: 40px;
+    align-self: flex-end;
+    gap: 20px;
+  }
+  .ed-hero-annotation > span:first-child {
+    font-size: 30px;
+  }
+  .ed-hero-annotation > span:last-child {
+    font-size: 9px;
+  }
+  .ed-hero-bottomline {
+    margin-top: 55px;
+  }
+  .ed-hero-bottomline .ed-label {
+    font-size: 8px;
+  }
+  .ed-human-story {
+    height: auto;
+  }
+  .ed-human-mobile {
+    padding: 45px 24px;
+    text-align: center;
+  }
+  .ed-human-mobile > .ed-kicker {
+    font-size: 24px;
+    margin-bottom: 28px;
+  }
+  .ed-human-mobile-title {
+    font-family: var(--ed-display);
+    font-size: 35px;
+    font-weight: 300;
+    letter-spacing: -0.05em;
+    line-height: 1.1;
+  }
+  .ed-human-mobile-title em {
+    font-size: 1.3em;
+  }
+  .ed-human-mobile img {
+    width: 230px;
+    height: 300px;
+    object-fit: contain;
+    mix-blend-mode: multiply;
+    margin: 25px auto;
+  }
+  .ed-human-mobile > .ed-label {
+    margin-top: 30px;
+    font-size: 8px;
+  }
+  .editorial-site .manifesto-intro {
+    padding: 50px 24px;
+    grid-template-columns: 1fr;
+    gap: 25px;
+  }
+  .editorial-site .manifesto-intro h2 {
+    font-size: 31px;
+  }
+  .editorial-site .manifesto-intro p:not(.eyebrow) {
+    font-size: 14px;
+  }
+  .editorial-site .beliefs {
+    margin: 0 24px;
+  }
+  .editorial-site .belief {
+    grid-template-columns: 23px 1fr;
+    gap: 15px;
+    padding: 30px 0;
+  }
+  .editorial-site .belief h2 {
+    font-size: 27px;
+  }
+  .editorial-site .belief p {
+    grid-column: 2;
+    font-size: 13px;
+  }
+  .editorial-site .manifesto-quote {
+    padding: 45px 24px;
+    margin-top: 20px;
+  }
+  .editorial-site .manifesto-quote .eyebrow,
+  .editorial-site .manifesto-quote figcaption {
+    font-size: 8px;
+  }
+  .editorial-site .manifesto-quote blockquote {
+    font-size: 30px;
+    margin-block: 25px;
+  }
+  .editorial-site .long-view {
+    padding: 48px 24px 10px;
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .editorial-site .long-view > .eyebrow {
+    grid-row: auto;
+  }
+  .editorial-site .long-view h2 {
+    font-size: 31px;
+    margin-bottom: 0;
+  }
+  .editorial-site .long-view > p:last-child {
+    font-size: 14px;
+  }
+  .ed-join-strip {
+    padding: 55px 24px;
+    gap: 25px;
+  }
+  .editorial-site .ed-join-strip h2 {
+    font-size: 47px;
+  }
+  .ed-join-strip > .ed-label {
+    font-size: 8px;
+  }
+  .editorial-site .build-directory {
+    margin: 30px 24px 0;
+  }
+  .editorial-site .directory-toolbar {
+    padding: 17px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .editorial-site .directory-toolbar h2 {
+    font-size: 10px;
+  }
+  .editorial-site .directory-toolbar .eyebrow {
+    font-size: 8px;
+  }
+  .editorial-site .empty-builds {
+    padding: 35px 20px;
+    min-height: 0;
+    text-align: center;
+    align-items: center;
+  }
+  .ed-empty-art {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: 180px;
+    margin-bottom: 40px;
+  }
+  .ed-empty-art canvas {
+    width: 180px !important;
+    height: auto !important;
+  }
+  .ed-art-label {
+    font-size: 7px;
+  }
+  .editorial-site .empty-builds h3 {
+    font-size: 39px;
+  }
+  .editorial-site .empty-builds > p {
+    font-size: 13px;
+  }
+  .editorial-site .empty-builds .text-link {
+    font-size: 9px;
+    gap: 10px;
+  }
+  .editorial-site .empty-note {
+    font-size: 8px;
+  }
+  .editorial-site .submission-note {
+    grid-template-columns: 1fr;
+    gap: 25px;
+    padding: 40px 24px 50px;
+  }
+  .editorial-site .submission-note h2 {
+    font-size: 29px;
+  }
+  .editorial-site .community-intro {
+    padding: 40px 24px;
+    grid-template-columns: 1fr;
+    gap: 35px;
+  }
+  .editorial-site .community-mark {
+    min-height: 240px;
+    aspect-ratio: 1.35;
+  }
+  .editorial-site .community-mark .eyebrow {
+    bottom: 18px;
+    font-size: 6px;
+  }
+  .editorial-site .community-intro h2 {
+    font-size: 33px;
+  }
+  .editorial-site .community-intro p {
+    font-size: 14px;
+  }
+  .editorial-site .disciplines {
+    margin: 10px 24px 45px;
+  }
+  .editorial-site .discipline-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .editorial-site .discipline-grid > div {
+    padding: 20px;
+  }
+  .editorial-site .discipline-grid h3 {
+    font-size: 22px;
+    margin-top: 30px;
+  }
+  .editorial-site .connection-section {
+    margin: 0 24px;
+    padding-top: 35px;
+  }
+  .editorial-site .connection-section > h2 {
+    font-size: 39px;
+  }
+  .editorial-site .steps {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    padding: 30px 0;
+  }
+  .editorial-site .steps h3 {
+    font-size: 27px;
+    margin-top: 12px;
+  }
+  .editorial-site .steps p {
+    font-size: 13px;
+  }
+  .editorial-site .community-values {
+    margin: 0 24px;
+    padding: 23px;
+  }
+  .ed-contact-hero .ed-mobile-canvas {
+    padding: 28px 25px 30px;
+  }
+  .ed-grid-art {
+    overflow: clip;
+  }
+  .ed-grid-art .fx-svg {
+    width: 1512px;
+    height: 850px;
+    left: -450px;
+    top: 130px;
+  }
+  .ed-contact-topline,
+  .ed-contact-bottomline {
+    position: relative;
+    left: auto;
+    right: auto;
+    top: auto;
+    bottom: auto;
+    gap: 25px;
+  }
+  .ed-contact-topline > span:last-child {
+    text-align: right;
+    max-width: 95px;
+  }
+  .ed-contact-title {
+    position: relative;
+    left: auto;
+    right: auto;
+    top: auto;
+    margin: 60px -5px 0;
+  }
+  .ed-contact-title .ed-kicker {
+    font-size: 23px;
+  }
+  .ed-contact-title h1 {
+    font-size: 46px;
+  }
+  .ed-contact-tile {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    align-self: flex-start;
+    width: max-content;
+  }
+  .tile-eye {
+    margin: 40px 0 0;
+  }
+  .tile-eye canvas {
+    width: 150px !important;
+    height: auto !important;
+  }
+  .tile-pegasus {
+    position: absolute;
+    top: 352px;
+    right: 26px;
+  }
+  .tile-pegasus canvas {
+    width: 105px !important;
+    height: auto !important;
+  }
+  .ed-contact-center {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: auto;
+    margin-top: 52px;
+  }
+  .ed-contact-center > p {
+    font-size: 19px;
+    max-width: 330px;
+    margin-bottom: 25px;
+  }
+  .ed-discord-card {
+    min-height: 80px;
+    padding: 20px;
+    gap: 15px;
+  }
+  .ed-discord-card > span:not(.sr-only) {
+    font-size: 22px;
+  }
+  .ed-contact-center > .ed-label {
+    font-size: 8px;
+  }
+  .ed-contact-bottomline {
+    margin-top: 50px;
+  }
+  .ed-contact-bottomline .ed-label {
+    font-size: 8px;
+  }
+  .editorial-site .join-guide {
+    padding: 45px 24px;
+    grid-template-columns: 1fr;
+    gap: 35px;
+  }
+  .editorial-site .join-guide h2 {
+    font-size: 45px;
+  }
+  .editorial-site .join-guide h3 {
+    font-size: 24px;
+  }
+  .editorial-site .join-guide li p {
+    font-size: 13px;
+  }
+  .editorial-site .invite-section {
+    margin: 0 24px;
+    padding: 25px 22px 45px;
+  }
+  .editorial-site .invite-section h2 {
+    font-size: 27px;
+  }
+  .editorial-site .invite-copy {
+    gap: 15px;
+  }
+  .editorial-site .invite-url {
+    font-size: 10px;
+    overflow-wrap: anywhere;
+  }
+  .editorial-site .site-footer {
+    margin: 0 24px;
+  }
+  .editorial-site .footer-top {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  .editorial-site .footer-top .wordmark {
+    font-size: 23px;
+  }
+  .editorial-site .footer-top > p {
+    font-size: 17px;
+    text-align: right;
+  }
+  .editorial-site .footer-top > .text-link {
+    grid-column: 1 / -1;
+    margin: 0;
+  }
+  .editorial-site .footer-bottom {
+    font-size: 7px;
+    flex-wrap: wrap;
+    gap: 4px 15px;
+  }
+  .editorial-site .footer-bottom > span:nth-child(2) {
+    width: 100%;
+    order: 3;
+    font-size: 6px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ed-human-story {
+    height: auto;
+  }
+  .ed-human-sticky {
+    position: relative;
+    height: 850px;
+    max-height: 100svh;
+  }
+  .editorial-site .fx-draw {
+    stroke-dashoffset: 0;
+    transition: none;
+  }
+  .editorial-site .fx-bar {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .ed-button:hover > .ed-arrow,
+  .ed-discord-card:hover > .icon {
+    transform: none;
+  }
+}
