@@ -30,6 +30,8 @@ def validate_ledger(data: dict) -> dict:
         for story in entry["stories"]:
             if not isinstance(story, dict) or any(not isinstance(story.get(k), str) for k in ("id", "title", "url")):
                 raise HistoryError("Invalid story record")
+            if "primary_url" in story and not isinstance(story["primary_url"], str):
+                raise HistoryError("Invalid primary-source identity")
     return data
 
 
@@ -87,7 +89,7 @@ class History:
         self.data["publications"].append({
             "id": publication_id, "date": date, "status": "pending",
             "created_at": datetime.now(timezone.utc).isoformat(),
-            "stories": [s.article.record() for s in stories],
+            "stories": [{**s.article.record(), "primary_url": s.verified_url or s.article.url} for s in stories],
             "payload_sha256": sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest(),
             "payload": payload,
         })

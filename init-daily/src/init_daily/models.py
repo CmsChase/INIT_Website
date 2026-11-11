@@ -96,6 +96,7 @@ class Article:
     source_tier: str = "ecosystem"
     company: str = ""
     ai_focused_source: bool = True
+    reference_urls: tuple[str, ...] = ()
 
     @property
     def id(self) -> str:
@@ -112,6 +113,8 @@ class Story:
     why: str
     category: str
     mode: str
+    verified_url: str = ""
+    verified_source: str = ""
 
 
 def is_research(article: Article) -> bool:

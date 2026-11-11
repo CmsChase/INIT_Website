@@ -40,6 +40,9 @@ class Settings:
     retries: int = 2
     max_feed_bytes: int = 5_000_000
     max_enrichments_per_source: int = 4
+    verify_selected: bool = False
+    verification_max_requests: int = 12
+    verification_timeout: int = 8
 
 
 def load_settings(path: Path) -> Settings:
@@ -47,7 +50,7 @@ def load_settings(path: Path) -> Settings:
 
     with path.open("rb") as stream:
         data = tomllib.load(stream)
-    briefing, ai, http = (data.get(k, {}) for k in ("briefing", "deepseek", "http"))
+    briefing, ai, http, verification = (data.get(k, {}) for k in ("briefing", "deepseek", "http", "verification"))
     sources = tuple(Source(**{**{k: v for k, v in s.items() if k != "enabled"},
                               "allowed_hosts": tuple(s["allowed_hosts"])})
                     for s in data.get("sources", []) if s.get("enabled", True))
@@ -63,8 +66,14 @@ def load_settings(path: Path) -> Settings:
         http_timeout=http.get("timeout_seconds", 20), retries=http.get("retries", 2),
         max_feed_bytes=http.get("max_feed_bytes", 5_000_000),
         max_enrichments_per_source=http.get("max_enrichments_per_source", 4),
+        verify_selected=verification.get("enabled", False),
+        verification_max_requests=verification.get("max_requests", 12),
+        verification_timeout=verification.get("timeout_seconds", 8),
     )
     ZoneInfo(settings.timezone)
+    if (not isinstance(settings.verify_selected, bool) or not 1 <= settings.verification_max_requests <= 15
+            or not 1 <= settings.verification_timeout <= 15):
+        raise ValueError("Invalid selected-story verification settings")
     if not 1 <= settings.min_stories <= settings.max_stories <= 5:
         raise ValueError("Story count must satisfy 1 <= minimum <= maximum <= 5")
     if not (settings.max_stories <= settings.candidate_limit <= 40):

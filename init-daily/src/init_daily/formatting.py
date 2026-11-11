@@ -20,12 +20,12 @@ def discord_payload(stories: list[Story], date: str, now: datetime, mode: str) -
         research = " · preliminary research" if is_research(article) else ""
         embeds.append({
             "title": f"{index:02d} / {safe_text(article.title, 230)}",
-            "url": article.url,
+            "url": story.verified_url or article.url,
             "description": safe_text(story.summary, 400),
             "color": 0xB8F36B,
             "fields": [{"name": "Why it matters · editorial",
                         "value": safe_text(story.why, 260), "inline": False}],
-            "footer": {"text": f"{safe_text(article.source_name, 80)}{research} · {article.published_at:%Y-%m-%d}"},
+            "footer": {"text": f"{safe_text(story.verified_source or article.source_name, 80)}{research} · {article.published_at:%Y-%m-%d}"},
         })
     label = "Source excerpts · rule-based selection" if mode == "fallback" else "Source excerpts · AI selection"
     payload = {

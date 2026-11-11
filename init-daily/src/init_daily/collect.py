@@ -13,6 +13,17 @@ import httpx
 from .config import Settings, Source
 from .models import Article, canonical_url, plain_text, trusted_url
 
+
+class _Links(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.urls = []
+
+    def handle_starttag(self, tag, attrs):
+        values = dict(attrs)
+        if tag == "a" and values.get("href"):
+            self.urls.append(values["href"])
+
 log = logging.getLogger(__name__)
 
 
@@ -89,9 +100,13 @@ def parse_feed(body: bytes, source: Source, now: datetime, settings: Settings) -
                 excerpt = excerpt.split("Abstract:", 1)[1].strip()
         if len(title) < 8 or (len(excerpt) < 50 and not source.excerpt_adapter):
             continue
+        references = _Links()
+        for html in [entry.get("summary", ""), *[c.get("value", "") for c in entry.get("content", [])]]:
+            references.feed(html)
         result.append(Article(title, canonical_url(link), excerpt, published,
                               source.id, source.name, source.weight, source.category,
-                              source.tier, source.company, source.ai_focused))
+                              source.tier, source.company, source.ai_focused,
+                              tuple(dict.fromkeys(urljoin(link, u) for u in references.urls))[:30]))
     return result
 
 

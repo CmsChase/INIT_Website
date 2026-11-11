@@ -70,6 +70,10 @@ def run_pipeline(settings: Settings, history: History, client: httpx.Client, now
         log.info("Fewer than %s eligible stories; skipping today's message", settings.min_stories)
         return report
     stories, ai_report = process(client, candidates, settings, now, api_key)
+    if settings.verify_selected and not fixture:
+        from .verification import verify_selected
+        stories, verification = verify_selected(stories, settings, client, now)
+        report["verification"] = verification
     report.update(stories=len(stories), processing=ai_report)
     report["editorial"].update(
         selected=[candidate_record(s.article, now) for s in stories],

@@ -50,7 +50,7 @@ The implementation posts the official OpenAI-compatible Chat Completions JSON fo
 
 Cost controls:
 
-- At most **one** paid request per eligible run; no AI retries or repair calls.
+- At most **one** paid request per eligible run; no AI retries or repair calls. Selected-story factual checks use bounded public HTTP reads, never another model request.
 - At most 20 candidates by default (configurable up to 40), each with an excerpt capped at 1,800 characters and up to three source-controlled summary options of at most 320 characters each.
 - Output capped at 2,200 tokens by default; thinking disabled and JSON output requested.
 - History, minimum story count, and diversity are checked before an API call.
@@ -70,6 +70,7 @@ Choose a **new** workflow run after pulling the fix; re-running an older run use
 - `status` should be `preview`, `publishing_requested` must be `false`, and `stories` should normally be 3–5. A quiet day can have 1–2 stories; no significant news produces `insufficient_news` and no message.
 - Successful AI processing has `processing.mode = "deepseek"`, `http_status = 200`, `finish_reason = "stop"`, and `request_attempts = 1`. `usage` contains available numeric token counts.
 - `processing.validation.grounding = "source_spans"` means the application inserted verified source text. `summary_defaults` counts omitted optional summary selectors filled with the article's default source span. `editorial_replacements` counts suggestions replaced with trusted local guidance; these replacements do not discard successful AI selection. `ai_selected_stories` counts retained AI choices, `rule_based_additions` counts locally selected replacements, and `policy_skips` counts AI choices skipped to enforce source/research caps. A `deepseek` result can include these explicitly reported local repairs; all final stories still obey the caps.
+- With production configuration, also inspect `verification`: its selected stories must have `status = "primary_body_checked"`, current primary URLs, check timestamps, body hashes and the exact evidence quotes. AI selection counts describe the ranking stage; `verification.withheld` explains any reduction in the final story count. A green AI response alone is not the final factual-quality check.
 - On fallback, inspect `processing.reason`, `processing.diagnostics.code`, and `processing.diagnostics.action`. Available safe metadata includes HTTP status, recognized API error code/parameter, finish reason, token counts, and the zero-based index of a rejected story. A missing API key makes zero requests.
 
 | `processing.reason` | Meaning / next step |
@@ -140,7 +141,7 @@ Delivery sequence:
 
 1. Load history; block if any unresolved reservation exists or this Shanghai date was sent.
 2. Remove previously sent URLs and close headline matches, including tracking URL and arXiv version variants.
-3. Build the complete message and push a **pending** record, its public story IDs and payload to the state branch.
+3. Check the selected stories against current primary article bodies, withhold unchecked stories, then build the complete message and push a **pending** record, its public story IDs and payload to the state branch.
 4. Only after that push succeeds, call Discord with `wait=true` and require a returned message ID.
 5. Save/push the confirmed ID and mark the record **sent**.
 
@@ -202,6 +203,20 @@ For factual summaries, the application prepares up to three short source spans p
 
 This V1 deliberately uses extractive summaries rather than unrestricted paraphrasing. It reports what a primary publisher or preprint claims; it does not independently reproduce benchmarks or prove those claims. Similarity matching catches identical and near-identical headlines, not every differently worded report about the same event. The AI is instructed to avoid event duplicates too. Curated primary feeds and source caps reduce this risk, but human review of previews is useful when changing sources.
 
+### Current primary-body checks for selected stories
+
+The mainstream ranking stage still uses lightweight feeds. The final selected stories undergo a separate, deterministic check **after ranking and before preview or publication**. This closes two gaps found on 2026-11-11: DeepMind's RSS/meta teaser retained an older proof-line count, and a reporting lead omitted Gemini's paid-tier/subscriber restrictions. Exact copying from those snippets did not establish that a claim was current or complete.
+
+Production enables `[verification].enabled = true`. Only selected stories are checked: at most 12 total HTTP requests, including redirects and any reporting-page lookup, with an eight-second request timeout, a 2 MB page limit, no retries, and a per-run cache. No search API, browser, extra AI call, or automatic PDF pipeline is introduced. Offline fixtures keep this step disabled and remain entirely offline.
+
+Official stories use the current linked article body. Reporting stories first use original-source links preserved from the feed's full content; if missing, one bounded read of the reporting article may locate a relevant official link. Only explicit known primary-publisher domains are accepted. Topic matching rejects unrelated references; metadata descriptions, navigation and page teasers are excluded as final evidence.
+
+Final headlines and concise excerpts come from the current primary body. Quantitative excerpts keep the source's units and qualifiers such as **over** or **approximately**. Access excerpts retain paid audiences, subscriber rollout and eligibility conditions. Unqualified public-availability leads are not reused when the primary body provides restrictions. Exact pricing amounts are deliberately omitted from the automated summary rather than stripping introductory/expiry conditions or presenting promotional pricing as permanent; the current original article is linked for the full terms. If a safe short qualified excerpt cannot be selected, the story is withheld. Builder guidance is reset to trusted conditional wording so an obsolete premise such as “widely available” cannot survive in the editorial explanation.
+
+Every retained quote must be an exact span in the fetched primary body. `run.json.verification` records the current primary URL/headline, check time, body SHA-256, exact evidence spans, corrections/omissions and withholding reason codes. These are checks against what a primary publisher currently states, not independent verification of its scientific or commercial claims. Technical PDFs can be reviewed manually when warranted; the daily pipeline does not infer extra precision from a paper it has not fetched.
+
+If a primary page is unavailable, blocked, unrelated or beyond the request budget, the story is **withheld without falling back to the stale teaser or padding the digest**. Duplicate primary URLs are also suppressed. Publication history retains both the original discovery identity and the checked primary URL so follow-up feeds do not repost the same story under its original source link. Review the artifact before production activation; do not disable checks merely to force a full briefing.
+
 ## Project map and verification
 
 ```text
@@ -217,6 +232,7 @@ init-daily/
     models.py          # Domain types, cleaning, URL/headline identity
     ranking.py         # Deterministic shortlist and no-key fallback
     processing.py      # DeepSeek interface and evidence validation
+    verification.py    # Selected-story current primary-body checks, no extra AI call
     formatting.py      # Discord payload and readable preview
     history.py         # Atomic local ledger and durable Git ledger
     publishing.py      # One confirmed webhook message, safe retry policy

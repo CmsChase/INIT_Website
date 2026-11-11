@@ -4,7 +4,7 @@ import re
 
 from .config import Settings
 from .editorial import assess, companies
-from .models import Article, Story, is_research, same_story
+from .models import Article, Story, canonical_url, is_research, same_story
 
 RELEVANCE = {
     "industry": "Consider how this could change access, competition, or trust in the AI tools people use and build with.",
@@ -31,7 +31,8 @@ def shortlist(articles: list[Article], previous: list[dict], settings: Settings,
     for article in ranked:
         if score(article, now)[0] < settings.min_score:
             continue
-        if any(article.id == p["id"] or same_story(article.title, p["title"]) for p in previous):
+        if any(article.id == p["id"] or canonical_url(article.url) == p.get("primary_url")
+               or same_story(article.title, p["title"]) for p in previous):
             continue
         if any(article.id == a.id or same_story(article.title, a.title) for a in unique):
             continue
