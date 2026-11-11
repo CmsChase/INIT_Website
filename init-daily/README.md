@@ -51,11 +51,43 @@ The implementation posts the official OpenAI-compatible Chat Completions JSON fo
 Cost controls:
 
 - At most **one** paid request per eligible run; no AI retries or repair calls.
-- At most 20 candidates by default (configurable up to 40), each with an excerpt capped at 1,800 characters.
+- At most 20 candidates by default (configurable up to 40), each with an excerpt capped at 1,800 characters and up to three source-controlled summary options of at most 320 characters each.
 - Output capped at 2,200 tokens by default; thinking disabled and JSON output requested.
 - History, minimum story count, and diversity are checked before an API call.
 - Missing key, authentication failure, timeout, malformed JSON, fabricated IDs/summaries, duplicate selections, or exceeded caps trigger the free fallback.
-- `run.json` records the processing mode and token counts returned by DeepSeek, never credentials or raw API responses.
+- `run.json` and the job summary record the processing mode, safe diagnostics, and validated token counts returned by DeepSeek, never credentials or raw API responses.
+
+### Diagnose a DeepSeek dry run
+
+Use **Actions → INIT Daily → Run workflow**, select **main**, set **dry_run=true** and **no_ai=false**. This makes at most one paid DeepSeek request, runs the read-only preview job, and never passes the Discord webhook secret to it. Keep `INIT_DAILY_PUBLISH_ENABLED` absent or `false`. With GitHub CLI:
+
+```powershell
+gh workflow run init-daily.yml --repo CmsChase/INIT_Website --ref main -f dry_run=true -f no_ai=false
+```
+
+Choose a **new** workflow run after pulling the fix; re-running an older run uses its older commit. Download the `init-daily-preview-RUN_ID-ATTEMPT` artifact and open `run.json`:
+
+- `status` should be `preview`, `publishing_requested` must be `false`, and `stories` should be 3–5.
+- Successful AI processing has `processing.mode = "deepseek"`, `http_status = 200`, `finish_reason = "stop"`, and `request_attempts = 1`. `usage` contains available numeric token counts.
+- `processing.validation.grounding = "source_spans"` means the application inserted verified source text. `editorial_replacements` counts suggestions replaced with trusted local guidance; these replacements do not discard successful AI selection.
+- On fallback, inspect `processing.reason`, `processing.diagnostics.code`, and `processing.diagnostics.action`. Available safe metadata includes HTTP status, recognized API error code/parameter, finish reason, token counts, and the zero-based index of a rejected story. A missing API key makes zero requests.
+
+| `processing.reason` | Meaning / next step |
+| --- | --- |
+| `authentication_error` | HTTP 401 or recognized authentication error: check the key secret and key status. |
+| `permission_error` | HTTP 403: check account/model access. |
+| `quota_error` | HTTP 402 or recognized balance/quota error: check the API account's balance/quota. |
+| `rate_limit_error` | HTTP 429: wait before another manual run; check concurrency/rate limits. |
+| `invalid_request` | HTTP 400/404/422: check the configured model and request parameters; an allowlisted `parameter` may identify the field. |
+| `api_error` | Other HTTP/API errors, including server failures: try a later dry run. |
+| `timeout` / `network_error` | Request timeout or DNS/TLS/connectivity failure; no automatic paid retry. |
+| `malformed_response` | Invalid outer JSON, completion schema, blank content, invalid model JSON, or story schema. `diagnostics.code` distinguishes them. |
+| `incomplete_response` | Output was truncated, filtered, or aborted. Check `finish_reason`; increase `max_tokens` within its bound only for `length`. |
+| `evidence_validation_error` | Unknown article/summary ID or quote absent from its source. Grounding is still enforced. |
+| `selection_validation_error` | Duplicate article, insufficient/excessive count, or violated source/research cap. |
+| `no_api_key` | AI was not attempted; configure the API key to use it. |
+
+Logs and artifacts deliberately exclude provider error messages, arbitrary error codes, request/response headers, raw model output, and exception text. Diagnostic codes/actions are generated locally; provider codes and parameter names are allowlisted. Incomplete or rejected completions still retain safe usage and finish-reason metadata. A successful workflow can contain a fallback: always check `processing.mode`, not just the green workflow status.
 
 ## Discord configuration
 
@@ -153,7 +185,7 @@ The collector accepts dated HTTPS links on each source's exact allowed hosts, us
 
 Selection uses topic matches, freshness, release signals, publisher weight, a minimum score, and penalties for funding/events/prereleases. Paid processing sees only the bounded deduplicated shortlist. Default limits are 48 hours, at most two stories per source, and at most two preliminary research stories in total. arXiv replacement announcements are excluded so old-paper revisions do not look like new discoveries. Preliminary research is explicitly labeled. New source categories should use one of `models`, `agents`, `tools`, `open_source`, `robotics`, or `research`; omit `category` for automatic classification.
 
-For factual summaries, DeepSeek selects a **verbatim contiguous English excerpt** of 50–320 characters from supplied source text. Validation rejects unknown IDs, invented summary text, duplicate IDs, invalid counts, and excessive source/research representation. It cannot invent source URLs or rewrite headlines because those come from the collector. The free fallback uses source excerpts and category-specific investigation suggestions. Builder guidance is clearly editorial and constrained to suggestions.
+For factual summaries, the application prepares up to three short source spans per article and DeepSeek selects one by `summary_id`. The application inserts the chosen text itself, so the model does not need to reproduce an exact quote or count its characters. Older extractive responses are accepted only when their quote matches the source after whitespace/NFC normalization, then shortened locally to 320 characters if necessary; new facts or paraphrases remain rejected. Validation rejects unknown article/summary IDs, unsupported quotes, duplicate IDs, invalid counts, and excessive source/research representation. It cannot invent source URLs or rewrite headlines because those come from the collector. An unsafe, missing, or stylistically invalid builder suggestion is replaced individually with trusted category guidance without discarding grounded AI selection. The free fallback uses source excerpts and category-specific investigation suggestions. Builder guidance is clearly editorial and constrained to suggestions.
 
 This V1 deliberately uses extractive summaries rather than unrestricted paraphrasing. It reports what a primary publisher or preprint claims; it does not independently reproduce benchmarks or prove those claims. Similarity matching catches identical and near-identical headlines, not every differently worded report about the same event. The AI is instructed to avoid event duplicates too. Curated primary feeds and source caps reduce this risk, but human review of previews is useful when changing sources.
 
@@ -182,4 +214,4 @@ The tests cover the complete preview path, mocked AI and Discord success/failure
 
 Available outputs are `briefing.md`, `discord.json`, and `run.json`. Skipped runs replace previews so yesterday's message cannot be mistaken for today's output. The workflow uploads public preview artifacts for 14 days and writes a job summary. Production state persists separately on the history branch.
 
-DeepSeek and Discord have only been exercised with mock transports in tests; enabling real service access requires the credentials and activation steps above. A successful no-key live feed preview validates the collection/ranking/formatting path without posting.
+The automated suite mocks DeepSeek and Discord, including authentication/quota/HTTP failures, timeout/network errors, malformed responses, truncation, evidence rejection, editorial repair, and diagnostics that cannot reflect sensitive provider text. Real DeepSeek access can be verified with the safe dry-run instructions above. Discord posting remains separately gated and is never exercised by the tests or preview job.

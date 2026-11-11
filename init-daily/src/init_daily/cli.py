@@ -92,6 +92,9 @@ def execute(args) -> int:
         if summary:
             with open(summary, "a", encoding="utf-8") as stream:
                 stream.write(f"## INIT:// Daily\n\nStatus: **{report['status']}** · Stories: {report['stories']}\n\n")
+                if "processing" in report:
+                    stream.write("### Processing diagnostics\n\n```json\n")
+                    stream.write(json.dumps(report["processing"], indent=2) + "\n```\n\n")
                 stream.write((settings.output_dir / "briefing.md").read_text(encoding="utf-8"))
     return 0
 

@@ -58,7 +58,7 @@ class PipelineTests(unittest.TestCase):
 
     def ai_response(self):
         return {"choices": [{"finish_reason": "stop", "message": {"content": json.dumps({
-            "stories": [{"id": s.article.id, "summary": s.article.excerpt[:150],
+            "stories": [{"id": s.article.id, "summary_id": "s0",
                          "why": "Consider testing the approach in a small project before using it in a larger workflow."}
                         for s in self.stories()]})}}], "usage": {"total_tokens": 123}}
 
@@ -137,7 +137,9 @@ class PipelineTests(unittest.TestCase):
             body = json.loads(request.content)
             self.assertEqual(body["thinking"], {"type": "disabled"})
             self.assertEqual(body["response_format"], {"type": "json_object"})
-            self.assertLessEqual(len(json.loads(body["messages"][1]["content"])["records"]), 20)
+            records = json.loads(body["messages"][1]["content"])["records"]
+            self.assertLessEqual(len(records), 20)
+            self.assertIn("s0", records[0]["summary_options"])
             return httpx.Response(200, json=self.ai_response())
         stories, report = process(self.client(handler), self.articles, self.settings, NOW, "fake-test-key")
         self.assertEqual(report["mode"], "deepseek")
@@ -146,20 +148,21 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(len(calls), 1)
 
     def test_ai_unknown_ids_fabricated_summaries_duplicates_and_truncation_fall_back(self):
-        for problem in ("id", "summary", "duplicate", "truncated", "why", "json"):
+        for problem in ("id", "summary", "summary_id", "duplicate", "truncated", "json"):
             with self.subTest(problem=problem):
                 body = self.ai_response()
                 content = json.loads(body["choices"][0]["message"]["content"])
                 if problem == "id":
                     content["stories"][0]["id"] = "invented"
                 elif problem == "summary":
+                    content["stories"][0].pop("summary_id")
                     content["stories"][0]["summary"] = "This model definitely outperforms every existing model at an invented task."
+                elif problem == "summary_id":
+                    content["stories"][0]["summary_id"] = "invented"
                 elif problem == "duplicate":
                     content["stories"][1] = content["stories"][0]
                 elif problem == "truncated":
                     body["choices"][0]["finish_reason"] = "length"
-                elif problem == "why":
-                    content["stories"][0]["why"] = "Try this https://evil.example with @everyone for 999 percent better performance."
                 body["choices"][0]["message"]["content"] = "bad-json" if problem == "json" else json.dumps(content)
                 stories, report = process(self.client(lambda r: httpx.Response(200, json=body)),
                                           self.articles, self.settings, NOW, "fake")
