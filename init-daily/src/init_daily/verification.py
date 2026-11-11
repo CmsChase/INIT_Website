@@ -264,13 +264,18 @@ def verify_selected(stories: list[Story], settings: Settings, client: httpx.Clie
                 except VerificationError:
                     if primary == primary_urls[-1]:
                         raise
-            issuer = next((s.name for s in settings.sources if s.tier == "official" and urlsplit(url).hostname in s.allowed_hosts), urlsplit(url).hostname)
+            publisher_sources = [s for s in settings.sources if s.tier == "official" or s.id in {"github", "huggingface"}]
+            primary_host = urlsplit(url).hostname
+            # Redirect allowlists can span related publishers. Prefer the exact
+            # configured publishing host, rather than calling blog.google DeepMind.
+            issuer = next((s.name for s in publisher_sources if urlsplit(s.url).hostname == primary_host),
+                          next((s.name for s in publisher_sources if primary_host in s.allowed_hosts), primary_host))
             why = ("Consider how the stated access and pricing conditions could affect adoption by individuals and small teams."
                    if details.get("access_conditions_retained") else RELEVANCE[score(article, now)[1]])
             accepted.append(replace(story, article=replace(article, title=title),
                                     summary=summary, why=why, verified_url=url, verified_source=issuer))
             primary_seen.add(url)
-            record.update(status="primary_body_checked", primary_url=url, body_sha256=sha256(raw).hexdigest(),
+            record.update(status="primary_body_checked", primary_url=url, primary_source=issuer, body_sha256=sha256(raw).hexdigest(),
                           primary_headline=title,
                           evidence_quotes=quotes, summary_replaced=summary != story.summary,
                           editorial_rechecked=True, **details)

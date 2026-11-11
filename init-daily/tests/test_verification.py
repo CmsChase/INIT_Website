@@ -113,6 +113,8 @@ class VerificationTests(unittest.TestCase):
         self.assertTrue(audit["stories"][0]["body_sha256"])
         payload = discord_payload(stories, "2026-11-11", NOW, "deepseek")
         self.assertEqual(payload["embeds"][0]["url"], GOOGLE)
+        self.assertTrue(payload["embeds"][0]["footer"]["text"].startswith("Google AI"))
+        self.assertEqual(audit["stories"][0]["primary_source"], "Google AI")
         self.assertNotIn("widely available", stories[0].why)
 
     def test_unavailable_primary_is_withheld_without_feed_fallback(self):
