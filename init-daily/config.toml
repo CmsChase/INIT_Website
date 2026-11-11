@@ -1,25 +1,27 @@
 [briefing]
 timezone = "Asia/Shanghai"
-lookback_hours = 48
-min_stories = 3
+lookback_hours = 72
+# Aim for 3-5; allow a shorter meaningful briefing instead of padding a quiet day.
+min_stories = 1
 max_stories = 5
-max_per_source = 2
-max_research_stories = 2
+# Soft company variety is preferred; significant same-company stories stay eligible.
+max_per_source = 5
+max_research_stories = 1
 candidate_limit = 20
-min_score = 3.0
+min_score = 7.0
 history_path = ".state/history.json"
 output_dir = "output"
 
 [deepseek]
-# Official OpenAI-compatible endpoint; no proxy or third-party gateway.
-# Verified 2026-11-11: https://api-docs.deepseek.com/ (DeepSeek-V4.1-Flash-1017).
+# Verified 2026-11-11 against https://api-docs.deepseek.com/.
 model = "deepseek-flash"
 max_tokens = 2200
 timeout_seconds = 60
 
 [http]
-timeout_seconds = 20
-retries = 2
+# Bounded collection across a broader source list still fits the Actions timeout.
+timeout_seconds = 12
+retries = 1
 max_feed_bytes = 5000000
 max_enrichments_per_source = 4
 
@@ -28,6 +30,8 @@ id = "openai"
 name = "OpenAI"
 url = "https://openai.com/news/rss.xml"
 allowed_hosts = ["openai.com"]
+tier = "official"
+company = "openai"
 weight = 1.5
 
 [[sources]]
@@ -35,14 +39,91 @@ id = "deepmind"
 name = "Google DeepMind"
 url = "https://deepmind.google/blog/rss.xml"
 allowed_hosts = ["deepmind.google", "blog.google"]
+tier = "official"
+company = "google"
 weight = 1.5
+
+[[sources]]
+id = "google-ai"
+name = "Google AI"
+url = "https://blog.google/innovation-and-ai/technology/ai/rss/"
+allowed_hosts = ["blog.google"]
+tier = "official"
+company = "google"
+weight = 1.3
+excerpt_adapter = "google_description"
+
+[[sources]]
+id = "anthropic"
+name = "Anthropic"
+url = "https://www.anthropic.com/news"
+allowed_hosts = ["www.anthropic.com", "anthropic.com"]
+format = "anthropic_news"
+tier = "official"
+company = "anthropic"
+weight = 1.5
+
+[[sources]]
+id = "microsoft"
+name = "Microsoft"
+url = "https://blogs.microsoft.com/feed/"
+allowed_hosts = ["blogs.microsoft.com"]
+tier = "official"
+company = "microsoft"
+ai_focused = false
+weight = 1.2
+
+[[sources]]
+id = "nvidia"
+name = "NVIDIA"
+url = "https://blogs.nvidia.com/feed/"
+allowed_hosts = ["blogs.nvidia.com"]
+tier = "official"
+company = "nvidia"
+ai_focused = false
+weight = 1.2
+
+[[sources]]
+id = "meta"
+name = "Meta"
+url = "https://about.fb.com/news/feed/"
+allowed_hosts = ["about.fb.com"]
+tier = "official"
+company = "meta"
+ai_focused = false
+weight = 1.2
+
+[[sources]]
+id = "techcrunch-ai"
+name = "TechCrunch AI"
+url = "https://techcrunch.com/category/artificial-intelligence/feed/"
+allowed_hosts = ["techcrunch.com"]
+tier = "reporting"
+weight = 1.0
+
+[[sources]]
+id = "verge-ai"
+name = "The Verge AI"
+url = "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml"
+allowed_hosts = ["www.theverge.com", "theverge.com"]
+tier = "reporting"
+weight = 1.0
+
+[[sources]]
+id = "ars-ai"
+name = "Ars Technica AI"
+url = "https://arstechnica.com/ai/feed/"
+allowed_hosts = ["arstechnica.com"]
+tier = "reporting"
+weight = 1.0
 
 [[sources]]
 id = "huggingface"
 name = "Hugging Face"
 url = "https://huggingface.co/blog/feed.xml"
 allowed_hosts = ["huggingface.co"]
-weight = 1.3
+tier = "ecosystem"
+weight = 1.0
 excerpt_adapter = "huggingface_markdown"
 
 [[sources]]
@@ -50,28 +131,38 @@ id = "github"
 name = "GitHub AI & ML"
 url = "https://github.blog/ai-and-ml/feed/"
 allowed_hosts = ["github.blog"]
-weight = 1.2
+tier = "ecosystem"
+weight = 1.0
 
+# Retained as opt-in source definitions, excluded from the mainstream profile.
+# A paper should normally reach the briefing through significant official news
+# or reputable independent reporting, not simply because it appeared on arXiv.
 [[sources]]
+enabled = false
 id = "transformers"
 name = "Transformers releases"
 url = "https://github.com/huggingface/transformers/releases.atom"
 allowed_hosts = ["github.com"]
+tier = "releases"
 category = "open_source"
-weight = 1.0
+weight = 0.5
 
 [[sources]]
+enabled = false
 id = "arxiv-ai"
 name = "arXiv cs.AI (preprints)"
 url = "https://rss.arxiv.org/rss/cs.AI"
 allowed_hosts = ["arxiv.org", "export.arxiv.org"]
+tier = "research"
 category = "research"
-weight = 0.6
+weight = 0.2
 
 [[sources]]
+enabled = false
 id = "arxiv-robotics"
 name = "arXiv cs.RO (preprints)"
 url = "https://rss.arxiv.org/rss/cs.RO"
 allowed_hosts = ["arxiv.org", "export.arxiv.org"]
+tier = "research"
 category = "robotics"
-weight = 0.8
+weight = 0.2

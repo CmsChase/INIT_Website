@@ -14,6 +14,10 @@ class Source:
     weight: float = 1.0
     category: str = ""
     excerpt_adapter: str = ""
+    tier: str = "ecosystem"
+    company: str = ""
+    ai_focused: bool = True
+    format: str = "rss"
 
 
 @dataclass(frozen=True)
@@ -61,8 +65,8 @@ def load_settings(path: Path) -> Settings:
         max_enrichments_per_source=http.get("max_enrichments_per_source", 4),
     )
     ZoneInfo(settings.timezone)
-    if not 3 <= settings.min_stories <= settings.max_stories <= 5:
-        raise ValueError("Story count must satisfy 3 <= minimum <= maximum <= 5")
+    if not 1 <= settings.min_stories <= settings.max_stories <= 5:
+        raise ValueError("Story count must satisfy 1 <= minimum <= maximum <= 5")
     if not (settings.max_stories <= settings.candidate_limit <= 40):
         raise ValueError("candidate_limit must be between max_stories and 40")
     if not (1 <= settings.lookback_hours <= 168 and 1 <= settings.max_per_source <= 5
@@ -81,8 +85,14 @@ def load_settings(path: Path) -> Settings:
             raise ValueError("Sources must use public HTTPS URLs")
         if not source.allowed_hosts or not math.isfinite(source.weight) or not 0 <= source.weight <= 5:
             raise ValueError("Invalid source trust or weight")
-        if source.category not in {"", "models", "agents", "tools", "open_source", "robotics", "research"}:
+        if source.category not in {"", "models", "agents", "tools", "open_source", "robotics", "research", "industry", "strategy"}:
             raise ValueError("Unknown source category")
-        if source.excerpt_adapter not in {"", "huggingface_markdown"}:
+        if source.excerpt_adapter not in {"", "huggingface_markdown", "google_description"}:
             raise ValueError("Unknown excerpt adapter")
+        if source.tier not in {"official", "reporting", "ecosystem", "research", "releases"}:
+            raise ValueError("Unknown editorial source tier")
+        if source.format not in {"rss", "anthropic_news"}:
+            raise ValueError("Unknown source format")
+        if not isinstance(source.company, str) or not isinstance(source.ai_focused, bool):
+            raise ValueError("Invalid company or AI-focus metadata")
     return settings

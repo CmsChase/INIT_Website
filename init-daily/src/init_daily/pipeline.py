@@ -1,6 +1,7 @@
 from datetime import datetime
 import json
 import logging
+from collections import Counter
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -8,6 +9,8 @@ import httpx
 
 from .collect import collect, parse_feed
 from .config import Settings
+from .editorial import candidate_record
+from .models import is_research
 from .formatting import discord_payload, markdown_preview
 from .history import History, HistoryError
 from .processing import process
@@ -56,6 +59,10 @@ def run_pipeline(settings: Settings, history: History, client: httpx.Client, now
     report.update(collected=len(articles), sources=source_report)
     candidates = shortlist(articles, history.previous_stories(), settings, now)
     report["candidates"] = len(candidates)
+    settings.output_dir.mkdir(parents=True, exist_ok=True)
+    audit = [candidate_record(a, now) for a in candidates]
+    (settings.output_dir / "candidates.json").write_text(json.dumps(audit, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    report["editorial"] = {"profile": "mainstream_ai_industry", "candidate_standalone_research": sum(is_research(a) for a in candidates)}
     # Avoid a paid call when diversity/minimum requirements cannot be met.
     if len(fallback(candidates, settings, now)) < settings.min_stories:
         report["status"] = "insufficient_news"
@@ -64,6 +71,16 @@ def run_pipeline(settings: Settings, history: History, client: httpx.Client, now
         return report
     stories, ai_report = process(client, candidates, settings, now, api_key)
     report.update(stories=len(stories), processing=ai_report)
+    report["editorial"].update(
+        selected=[candidate_record(s.article, now) for s in stories],
+        selected_standalone_research=sum(is_research(s.article) for s in stories),
+        company_counts=dict(Counter(c for s in stories for c in candidate_record(s.article, now)["companies"])),
+        source_tiers=dict(Counter(s.article.source_tier for s in stories)),
+    )
+    if len(stories) < settings.min_stories:
+        report["status"] = "insufficient_news"
+        write_outputs(settings.output_dir, report)
+        return report
     payload = discord_payload(stories, date, now, ai_report["mode"])
     if fixture:
         payload["content"] = "**OFFLINE DEMO · SYNTHETIC DATA**\n" + payload["content"]

@@ -93,6 +93,9 @@ class Article:
     source_name: str
     weight: float
     category: str = ""
+    source_tier: str = "ecosystem"
+    company: str = ""
+    ai_focused_source: bool = True
 
     @property
     def id(self) -> str:

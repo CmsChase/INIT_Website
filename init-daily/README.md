@@ -1,6 +1,6 @@
 # INIT:// Daily
 
-A small, serverless AI news briefing for people who build. It collects trusted RSS/Atom feeds, removes stale and repeated stories, selects 3–5 items, explains their practical relevance, and can send **one quiet Discord message per Shanghai calendar day**.
+A small, serverless briefing on the mainstream AI industry for young builders. It prioritizes significant model launches, product changes, capabilities and strategic developments at major AI companies, with important ecosystem news in second place. It aims for 3–5 meaningful headlines, allows fewer on quiet days, and can send **one quiet Discord message per Shanghai calendar day**. It never pads the briefing with academic papers to reach a quota.
 
 **Publishing is disabled by default.** Development, tests, and offline demos require no credentials. No real Discord messages are sent by the test suite.
 
@@ -67,7 +67,7 @@ gh workflow run init-daily.yml --repo CmsChase/INIT_Website --ref main -f dry_ru
 
 Choose a **new** workflow run after pulling the fix; re-running an older run uses its older commit. Download the `init-daily-preview-RUN_ID-ATTEMPT` artifact and open `run.json`:
 
-- `status` should be `preview`, `publishing_requested` must be `false`, and `stories` should be 3–5.
+- `status` should be `preview`, `publishing_requested` must be `false`, and `stories` should normally be 3–5. A quiet day can have 1–2 stories; no significant news produces `insufficient_news` and no message.
 - Successful AI processing has `processing.mode = "deepseek"`, `http_status = 200`, `finish_reason = "stop"`, and `request_attempts = 1`. `usage` contains available numeric token counts.
 - `processing.validation.grounding = "source_spans"` means the application inserted verified source text. `summary_defaults` counts omitted optional summary selectors filled with the article's default source span. `editorial_replacements` counts suggestions replaced with trusted local guidance; these replacements do not discard successful AI selection. `ai_selected_stories` counts retained AI choices, `rule_based_additions` counts locally selected replacements, and `policy_skips` counts AI choices skipped to enforce source/research caps. A `deepseek` result can include these explicitly reported local repairs; all final stories still obey the caps.
 - On fallback, inspect `processing.reason`, `processing.diagnostics.code`, and `processing.diagnostics.action`. Available safe metadata includes HTTP status, recognized API error code/parameter, finish reason, token counts, and the zero-based index of a rejected story. A missing API key makes zero requests.
@@ -98,7 +98,7 @@ Logs and artifacts deliberately exclude provider error messages, arbitrary error
 
 This V1 supports standard text-channel webhooks, not forum/media channels requiring thread parameters. There is no bot to host or invite. See [Discord's official webhook documentation](https://docs.discord.com/developers/resources/webhook).
 
-Each briefing is a single message with 3–5 minimalist green-accented embeds: original headline, source excerpt, **Why it matters for builders · editorial**, and original source link. It disables mentions, sanitizes source markdown and links, suppresses notifications, and validates message size limits. An empty or sparse news day produces **no post**, rather than padding the briefing with old or invented material.
+Each briefing is a single message with up to five minimalist green-accented embeds: original headline, source excerpt, **Why it matters · editorial**, and original source link. Implications should be accessible to AI users and small teams, covering access, competition, adoption, or building opportunities. It disables mentions, sanitizes source markdown and links, suppresses notifications, and validates message size limits. A quiet day can have fewer than three stories; no significant news produces **no post**.
 
 ## Activate automatic publishing
 
@@ -169,21 +169,34 @@ If a local process was forcibly killed, inspect it before removing a stale `.sta
 
 `config.toml` controls the news window, count limits, source weights, source/domain allowlists, model, request limits, and local paths. Relative paths resolve against that configuration file. Add `enabled = false` to a source block to disable it.
 
-Default feeds:
+Default sources (availability checked 2026-11-11):
 
-| Source | Public feed | Role |
+| Source | Public feed / index | Role |
 | --- | --- | --- |
 | OpenAI | `https://openai.com/news/rss.xml` | First-party model/product/research announcements |
 | Google DeepMind | `https://deepmind.google/blog/rss.xml` | Models, research, robotics |
+| Google AI | `https://blog.google/innovation-and-ai/technology/ai/rss/` | Gemini, product features, partnerships |
+| Anthropic | `https://www.anthropic.com/news` | Dated official announcement cards; no RSS dependency |
+| Microsoft | `https://blogs.microsoft.com/feed/` | Copilot, AI infrastructure, strategic announcements |
+| NVIDIA | `https://blogs.nvidia.com/feed/` | AI platforms, hardware and significant ecosystem announcements |
+| Meta | `https://about.fb.com/news/feed/` | AI-filtered official company news |
+| TechCrunch AI | `https://techcrunch.com/category/artificial-intelligence/feed/` | Reputable secondary coverage across major/emerging companies |
+| The Verge AI | `https://www.theverge.com/rss/ai-artificial-intelligence/index.xml` | Mainstream product and industry reporting |
+| Ars Technica AI | `https://arstechnica.com/ai/feed/` | Product, industry, and security reporting |
 | Hugging Face | `https://huggingface.co/blog/feed.xml` | Open models and developer ecosystem |
 | GitHub | `https://github.blog/ai-and-ml/feed/` | AI development tools |
-| Transformers | `https://github.com/huggingface/transformers/releases.atom` | Curated open-source releases |
-| arXiv cs.AI | `https://rss.arxiv.org/rss/cs.AI` | Preliminary AI research |
-| arXiv cs.RO | `https://rss.arxiv.org/rss/cs.RO` | Preliminary robotics research |
 
-The collector accepts dated HTTPS links on each source's exact allowed hosts, uses bounded retries/timeouts/response sizes, and continues through individual source failures. All sources failing returns an error. A successful feed with no eligible recent entries is normal. It scans at most 500 entries per feed and uses feed excerpts/abstracts. Hugging Face's title-only RSS uses the `huggingface_markdown` adapter: at most four missing excerpts per run are read from its [official public blog repository](https://github.com/huggingface/blog) through `raw.githubusercontent.com`. That cap is configurable as `[http].max_enrichments_per_source`; failed lookups are skipped. It never scrapes arbitrary linked pages or paywalled content.
+The collector accepts dated HTTPS links on each source's exact allowed hosts, uses bounded retries/timeouts/response sizes, and continues through individual source failures. All sources failing returns an error. A successful source with no recent entries is normal. It scans at most 500 entries per feed. Anthropic's adapter reads one public index and accepts only cards with an explicit publication date, heading, source description and trusted article URL; it executes no scripts and does not infer dates from page updates. The 72-hour window accommodates date-only announcements and slower official feeds, while publication history prevents repeating yesterday's stories.
 
-Selection uses topic matches, freshness, release signals, publisher weight, a minimum score, and penalties for funding/events/prereleases. Paid processing sees only the bounded deduplicated shortlist. Default limits are 48 hours, at most two stories per source, and at most two preliminary research stories in total. arXiv replacement announcements are excluded so old-paper revisions do not look like new discoveries. Preliminary research is explicitly labeled. New source categories should use one of `models`, `agents`, `tools`, `open_source`, `robotics`, or `research`; omit `category` for automatic classification.
+Hugging Face's title-only RSS uses the `huggingface_markdown` adapter: at most four missing excerpts per run are read from its [official public blog repository](https://github.com/huggingface/blog). Google feed image captions are replaced with the original article's official meta description through `google_description`; if unavailable, the item is skipped. Both adapters use `[http].max_enrichments_per_source`, exact trusted domains, and the same response/request bounds. No arbitrary third-party pages or paywalls are scraped.
+
+There is no verified usable official RSS for xAI or DeepSeek in this configuration: xAI's index blocked the reader, and the tested DeepSeek news RSS path returned documentation HTML. Their significant announcements are covered through the reporting feeds. They remain high-priority company families, alongside OpenAI/ChatGPT, Google/DeepMind/Gemini, Anthropic/Claude, Meta/Llama, Microsoft/Copilot and NVIDIA. Amazon, Apple and Alibaba are also recognized when their AI developments are significant. Coverage is curated and cannot guarantee every announcement appears immediately.
+
+Selection is impact-first before AI processing: major-company model launches, product changes, partnerships, infrastructure and significant security/regulatory developments receive higher scores. Tutorials, customer marketing, speculation, routine patches, deployment recipes and internal/conference updates are penalized. Generic corporate feeds must contain AI-related news. A company name alone does not rescue an academic paper or routine technical update. Original announcements win identical/near-identical reporting duplicates. Only candidates above `min_score` reach the paid model, with at most 20 by default.
+
+Raw arXiv and routine Transformers release feeds are **disabled by default**, although their definitions remain for deliberate future reconfiguration. Standalone preprints receive zero editorial score even when they mention major companies. Significant research can qualify through an official announcement or reputable reporting that establishes broad implications. This avoids treating publication frequency as significance.
+
+Default settings are 72 hours, `min_score = 7`, `min_stories = 1`, and `max_stories = 5`. Three to five is an aim, not a quota. DeepSeek may select fewer or decline all candidates; that decision is not replaced by filler. The old two-per-source ceiling is removed in the production profile (`max_per_source = 5`), so several major same-company stories can coexist. Variety is a small preference among comparable stories, reinforced by the AI prompt, not a company quota. A safety research cap of one remains for explicitly research-tagged custom sources; the default profile has no raw-paper source. Allowed categories also include `industry` and `strategy` for broader implications.
 
 For factual summaries, the application prepares up to three short source spans per article and DeepSeek may select one by `summary_id`. When that optional selector is absent, the application uses the default source span and counts the substitution. The application inserts source text itself, so the model does not need to reproduce an exact quote or count its characters. Older extractive responses are accepted only when their quote matches the source after whitespace/NFC normalization, then shortened locally to 320 characters if necessary; new facts or paraphrases remain rejected. Validation rejects unknown article/summary IDs, unsupported quotes, duplicate IDs, and invalid counts. Source/research caps are enforced deterministically: over-cap choices are skipped and gaps filled from the existing validated shortlist, preserving the model's retained order and reporting every local addition. It cannot invent source URLs or rewrite headlines because those come from the collector. An unsafe, missing, or stylistically invalid builder suggestion is replaced individually with trusted category guidance without discarding grounded AI selection. The free fallback uses source excerpts and category-specific investigation suggestions. Builder guidance is clearly editorial and constrained to suggestions.
 
@@ -199,6 +212,8 @@ init-daily/
   src/init_daily/
     cli.py             # Safe defaults and environment/config handling
     collect.py         # Bounded RSS/Atom ingestion and source validation
+    news_index.py      # Dated official announcement cards when RSS is unavailable
+    editorial.py       # Mainstream company/impact signals and public ranking audit
     models.py          # Domain types, cleaning, URL/headline identity
     ranking.py         # Deterministic shortlist and no-key fallback
     processing.py      # DeepSeek interface and evidence validation
@@ -212,6 +227,6 @@ init-daily/
 
 The tests cover the complete preview path, mocked AI and Discord success/failure, source validation and failure isolation, size/date limits, RSS/Atom/permalink parsing, evidence rejection, secrets staying out of error logs, URL/headline/history deduplication, sparse days, publish gates, interrupted delivery, ledger corruption, local locking, and a real local Git reservation race across runs. The Git test uses fresh clones to verify pending reservations, confirmed message IDs, and story deduplication survive runner replacement. CI runs the suite and offline demo before any scheduled/manual briefing.
 
-Available outputs are `briefing.md`, `discord.json`, and `run.json`. Skipped runs replace previews so yesterday's message cannot be mistaken for today's output. The workflow uploads public preview artifacts for 14 days and writes a job summary. Production state persists separately on the history branch.
+Available outputs are `briefing.md`, `discord.json`, `run.json`, and `candidates.json`. The latter exposes the bounded shortlist's headlines, URLs, companies, source tiers, editorial scores and signals, without raw model responses. `run.json.editorial` shows the selected headlines, company counts, source tiers, and standalone-research count for review. Skipped runs replace previews so yesterday's message cannot be mistaken for today's output. The workflow uploads public preview artifacts for 14 days and writes a job summary. Production state persists separately on the history branch.
 
 The automated suite mocks DeepSeek and Discord, including authentication/quota/HTTP failures, timeout/network errors, malformed responses, truncation, evidence rejection, editorial repair, and diagnostics that cannot reflect sensitive provider text. Real DeepSeek access can be verified with the safe dry-run instructions above. Discord posting remains separately gated and is never exercised by the tests or preview job.

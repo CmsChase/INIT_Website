@@ -240,7 +240,8 @@ class PipelineTests(unittest.TestCase):
         research = [replace(self.articles[0], source_id=f"arxiv-{i}", category="research",
                             url=f"https://arxiv.org/abs/2611.1234{i}", title=f"Research example {i}") for i in range(3)]
         selected = fallback(research + self.articles, self.settings, NOW)
-        self.assertEqual(sum(is_research(s.article) for s in selected), 2)
+        self.assertLessEqual(sum(is_research(s.article) for s in selected), 2)
+        self.assertEqual(sum(is_research(s.article) for s in fallback(research, self.settings, NOW)), 2)
         content = json.dumps({"stories": [{"id": a.id, "summary": a.excerpt[:150],
             "why": "Consider testing the approach in a small project before using it in a larger workflow."}
             for a in research]})

@@ -4,6 +4,7 @@ import calendar
 import logging
 import re
 import time
+from html.parser import HTMLParser
 from urllib.parse import urljoin, urlsplit
 
 import feedparser
@@ -89,24 +90,54 @@ def parse_feed(body: bytes, source: Source, now: datetime, settings: Settings) -
         if len(title) < 8 or (len(excerpt) < 50 and not source.excerpt_adapter):
             continue
         result.append(Article(title, canonical_url(link), excerpt, published,
-                              source.id, source.name, source.weight, source.category))
+                              source.id, source.name, source.weight, source.category,
+                              source.tier, source.company, source.ai_focused))
     return result
+
+
+class _Description(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.values = {}
+
+    def handle_starttag(self, tag, attrs):
+        values = dict(attrs)
+        key = values.get("property") or values.get("name")
+        if tag == "meta" and key in {"description", "og:description"}:
+            self.values[key] = values.get("content", "")
 
 
 def enrich_missing(client: httpx.Client, items: list[Article], source: Source,
                    settings: Settings) -> list[Article]:
-    """HF RSS is title-only. Read at most four official repository documents.
+    """Repair title-only HF entries or image-caption Google feed descriptions.
 
     Never follow arbitrary article links or use a third-party article extractor.
     """
     result, attempts = [], 0
     for article in items:
-        if len(article.excerpt) >= 50:
+        caption = source.excerpt_adapter == "google_description" and bool(re.search(
+            r"^(?:a|an|the) (?:man|woman|person|phone|illustration|image|photo|graphic|screenshot|collage|logo)\b",
+            article.excerpt, re.I))
+        if len(article.excerpt) >= 50 and not caption:
             result.append(article)
             continue
-        if source.excerpt_adapter != "huggingface_markdown" or attempts >= settings.max_enrichments_per_source:
+        if attempts >= settings.max_enrichments_per_source:
             continue
         url = urlsplit(article.url)
+        if source.excerpt_adapter == "google_description" and url.hostname == "blog.google":
+            attempts += 1
+            try:
+                page_source = replace(source, url=article.url)
+                parser = _Description()
+                parser.feed(fetch_feed(client, page_source, settings).decode("utf-8"))
+                excerpt = plain_text(parser.values.get("og:description") or parser.values.get("description", ""))[:1800]
+                if len(excerpt) >= 50:
+                    result.append(replace(article, excerpt=excerpt))
+            except (CollectionError, UnicodeError):
+                log.warning("Source %s: unavailable official description; skipping one item", source.id)
+            continue
+        if source.excerpt_adapter != "huggingface_markdown":
+            continue
         if url.hostname != "huggingface.co" or not re.fullmatch(r"/blog/[A-Za-z0-9_-]+", url.path):
             continue
         attempts += 1
@@ -132,7 +163,12 @@ def collect(client: httpx.Client, settings: Settings, now: datetime) -> tuple[li
     articles, report = [], {}
     for source in settings.sources:
         try:
-            items = parse_feed(fetch_feed(client, source, settings), source, now, settings)
+            body = fetch_feed(client, source, settings)
+            if source.format == "anthropic_news":
+                from .news_index import parse_announcements
+                items = parse_announcements(body, source, now, settings)
+            else:
+                items = parse_feed(body, source, now, settings)
             items = enrich_missing(client, items, source, settings)
             articles.extend(items)
             report[source.id] = {"status": "ok", "recent_items": len(items)}
