@@ -46,6 +46,15 @@ def _words(text: str) -> set[str]:
     return set(re.findall(r"[a-z0-9]+", text.lower())) - STOP
 
 
+def _same_topic(discovery: str, primary: str) -> bool:
+    a, b = _words(discovery), _words(primary)
+    overlap = len(a & b)
+    versions_a = set(re.findall(r"\b\d+(?:\.\d+)*\b", discovery))
+    versions_b = set(re.findall(r"\b\d+(?:\.\d+)*\b", primary))
+    return (overlap >= 2 and overlap / max(1, min(len(a), len(b))) >= .75
+            and not (versions_a and versions_b and not versions_a <= versions_b))
+
+
 def article_body(raw: bytes) -> tuple[str, list[str], list[str]]:
     parser = _Index()
     parser.feed(raw.decode("utf-8"))
@@ -244,7 +253,7 @@ def verify_selected(stories: list[Story], settings: Settings, client: httpx.Clie
                 try:
                     url, raw = reader.get(primary, hosts)
                     title, blocks, _ = article_body(raw)
-                    if len(_words(title) & _words(article.title)) < 2:
+                    if not _same_topic(article.title, title):
                         raise VerificationError("primary_topic_mismatch")
                     if url in primary_seen:
                         raise VerificationError("duplicate_primary_story")

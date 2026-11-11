@@ -150,6 +150,15 @@ class VerificationTests(unittest.TestCase):
             self.assertFalse(stories)
             self.assertEqual(audit["stories"][0]["code"], code)
 
+    def test_common_company_and_version_tokens_do_not_corroborate_a_different_model(self):
+        story = self.story("Google releases Gemini 4 Carbon", GOOGLE, "Available to the general public.")
+        for title in ("Gemini 4 Argon is now available", "Gemini 5 Carbon is now available"):
+            raw = page(title, *self.access_body())
+            with httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(200, content=raw))) as client:
+                stories, audit = verify_selected([story], self.settings, client, NOW)
+            self.assertFalse(stories)
+            self.assertEqual(audit["stories"][0]["code"], "primary_topic_mismatch")
+
     def test_history_deduplicates_discovery_and_verified_primary_urls(self):
         with tempfile.TemporaryDirectory() as temporary:
             story = replace(self.story(url="https://www.theverge.com/story", source="verge-ai", tier="reporting"), verified_url=DEEP)
