@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=77,<83"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "init-daily"
+version = "1.0.0"
+description = "A quiet, source-grounded AI briefing for INIT:// builders"
+requires-python = ">=3.11"
+dependencies = ["httpx==0.28.1", "feedparser==6.0.12", "tzdata==2026.2"]
+
+[project.scripts]
+init-daily = "init_daily.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -1,0 +1,24 @@
+[briefing]
+output_dir = "../output/demo"
+history_path = "../.state/demo-history.json"
+
+[[sources]]
+id = "demo-models"
+name = "DEMO · models (synthetic)"
+url = "https://example.com/models.xml"
+allowed_hosts = ["example.com"]
+category = "models"
+
+[[sources]]
+id = "demo-agents"
+name = "DEMO · tools (synthetic)"
+url = "https://example.com/agents.xml"
+allowed_hosts = ["example.com"]
+category = "agents"
+
+[[sources]]
+id = "demo-robotics"
+name = "DEMO · robotics (synthetic)"
+url = "https://example.com/robotics.xml"
+allowed_hosts = ["example.com"]
+category = "robotics"

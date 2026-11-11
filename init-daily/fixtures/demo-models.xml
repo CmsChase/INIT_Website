@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"><channel><title>OFFLINE DEMO — synthetic model stories</title>
+<item><title>DEMO: An open model release with downloadable evaluation materials</title>
+<link>https://example.com/demo/open-model?utm_source=fixture</link>
+<pubDate>Tue, 10 Nov 2026 12:00:00 GMT</pubDate>
+<description>This synthetic example describes an open model release with evaluation materials. It exists only to test the INIT Daily briefing pipeline and is not a real announcement.</description></item>
+<item><title>DEMO: A multimodal training dataset for student projects</title>
+<guid isPermaLink="true">https://example.com/demo/training-dataset</guid>
+<pubDate>Tue, 10 Nov 2026 13:00:00 GMT</pubDate>
+<description>This synthetic example describes training data for a multimodal model. It is offline test material, not a real dataset release or a recommendation.</description></item>
+</channel></rss>

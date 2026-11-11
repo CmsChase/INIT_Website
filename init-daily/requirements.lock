@@ -1,0 +1,12 @@
+# Runtime dependencies, pinned for reproducible Windows/Linux installs.
+# Install the local project separately: python -m pip install --no-deps -e .
+anyio==4.16.0
+certifi==2026.10.23
+feedparser==6.0.12
+h11==0.16.0
+httpcore==1.0.9
+httpx==0.28.1
+idna==3.20
+sgmllib3k==1.0.0
+typing_extensions==4.16.0
+tzdata==2026.2

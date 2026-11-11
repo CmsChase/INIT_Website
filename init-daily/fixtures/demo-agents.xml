@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>OFFLINE DEMO — synthetic tools</title><id>urn:init:demo:agents</id><updated>2026-11-10T14:00:00Z</updated>
+<entry><title>DEMO: A developer SDK for testing agent tool use</title>
+<id>urn:init:demo:agent-sdk</id><link href="https://example.com/demo/agent-sdk" rel="alternate"/>
+<updated>2026-11-10T14:00:00Z</updated>
+<summary>This synthetic example describes a developer SDK for agent tool testing. It exists only to exercise Atom parsing, topic ranking, and the no-network preview mode.</summary></entry>
+<entry><title>DEMO: An open-source coding tool for local development</title>
+<id>urn:init:demo:coding-tool</id><link href="https://example.com/demo/coding-tool" rel="alternate"/>
+<updated>2026-11-10T15:00:00Z</updated>
+<summary>This synthetic example describes a coding tool with a local development workflow. It is a test fixture and makes no claim about an actual product.</summary></entry>
+</feed>
