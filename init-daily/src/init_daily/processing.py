@@ -23,7 +23,8 @@ tools, outside knowledge, invented sources, or invented facts.
 Return JSON: {"stories":[{"id":"supplied record ID","summary_id":"s0",
 "why":"Consider testing this approach in a small project before adopting it."}]}.
 Choose 3-5 stories, respecting max_stories, max_per_source, and max_research_stories.
-For each story, choose a summary_id from THAT record's summary_options.
+For each story, optionally choose a summary_id from THAT record's summary_options.
+If omitted, the application uses that record's default source excerpt (s0).
 Do not copy, rewrite, combine, or invent summary text. The application inserts
 the selected source excerpt itself, preserving factual grounding.
 why should be a concise English suggestion of 20-240 characters explaining what
@@ -84,22 +85,26 @@ def summary_options(article: Article) -> dict[str, str]:
     return {f"s{i}": text for i, text in enumerate(texts)}
 
 
-def _summary(item: dict, article: Article, index: int) -> str:
+def _summary(item: dict, article: Article, index: int) -> tuple[str, bool]:
     if "summary_id" in item:
         summary_id = item["summary_id"]
         options = summary_options(article)
         if not isinstance(summary_id, str) or summary_id not in options:
             raise ProcessingError("evidence_validation_error", "unknown_summary_id", index)
-        return options[summary_id]
+        return options[summary_id], False
+    if "summary" not in item:
+        # Ranking a known article is sufficient: absent optional formatting is
+        # not missing evidence, since the application owns all summary text.
+        return summary_options(article)["s0"], True
     # Accept older extractive responses, but never unverified paraphrases. A
     # harmless line wrap or a quote over 320 chars need not invalidate a batch.
     text = item.get("summary")
     if not isinstance(text, str):
-        raise ProcessingError("malformed_response", "missing_summary_selection", index)
+        raise ProcessingError("malformed_response", "invalid_summary_schema", index)
     text, evidence = _normalise(text), _normalise(article.excerpt)
     if not 20 <= len(text) <= 1800 or text not in evidence:
         raise ProcessingError("evidence_validation_error", "summary_not_in_source", index)
-    return excerpt_summary(text)
+    return excerpt_summary(text), False
 
 
 def _editorial(value, category: str) -> tuple[str, bool]:
@@ -128,7 +133,7 @@ def validate_response(content: str, candidates: list[Article], settings: Setting
         raise ProcessingError("selection_validation_error", "invalid_story_count")
     by_id = {a.id: a for a in candidates}
     result, seen, counts, policy_skips = [], set(), Counter(), Counter()
-    research_count, editorial_replacements = 0, 0
+    research_count, editorial_replacements, summary_defaults = 0, 0, 0
     for index, item in enumerate(items):
         if not isinstance(item, dict) or not isinstance(item.get("id"), str):
             raise ProcessingError("malformed_response", "invalid_story_schema", index)
@@ -139,7 +144,7 @@ def validate_response(content: str, candidates: list[Article], settings: Setting
             raise ProcessingError("selection_validation_error", "duplicate_article", index)
         # Validate evidence even on a story that may later exceed a policy cap.
         # Policy repair must never become a way to accept fabricated claims.
-        summary = _summary(item, article, index)
+        summary, defaulted = _summary(item, article, index)
         seen.add(article.id)
         if counts[article.source_id] >= settings.max_per_source:
             policy_skips["source_cap_exceeded"] += 1
@@ -150,6 +155,7 @@ def validate_response(content: str, candidates: list[Article], settings: Setting
         category = score(article, now)[1]
         why, replaced = _editorial(item.get("why"), category)
         editorial_replacements += int(replaced)
+        summary_defaults += int(defaulted)
         result.append(Story(article, summary, why, category, "deepseek"))
         counts[article.source_id] += 1
         research_count += int(is_research(article))
@@ -172,7 +178,7 @@ def validate_response(content: str, candidates: list[Article], settings: Setting
     if len(result) < settings.min_stories:
         raise ProcessingError("selection_validation_error", "insufficient_eligible_stories")
     if diagnostics is not None:
-        diagnostics.update(editorial_replacements=editorial_replacements,
+        diagnostics.update(editorial_replacements=editorial_replacements, summary_defaults=summary_defaults,
                            ai_selected_stories=ai_selected_stories,
                            rule_based_additions=len(result) - ai_selected_stories,
                            policy_skips=dict(policy_skips))

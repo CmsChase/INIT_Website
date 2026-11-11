@@ -201,6 +201,31 @@ class DeepSeekRegressionTests(unittest.TestCase):
         self.assertEqual(stories[0].summary, summary_options(self.articles[0])["s0"])
         self.assertNotIn(SENTINEL, stories[0].summary)
 
+    def test_missing_optional_summary_selector_uses_source_default(self):
+        # Reproduces run 42940140543 without capturing any raw model response.
+        response = self.mutate(lambda c: c["stories"][1].pop("summary_id"))
+        stories, report = self.run_response(response)
+        self.assertEqual(report["mode"], "deepseek")
+        self.assertEqual(stories[1].summary, summary_options(self.articles[1])["s0"])
+        self.assertEqual(report["validation"]["summary_defaults"], 1)
+
+    def test_minimal_article_ranking_is_sufficient_for_grounded_briefing(self):
+        def minimal(content):
+            content["stories"] = [{"id": item["id"]} for item in content["stories"]]
+        stories, report = self.run_response(self.mutate(minimal))
+        self.assertEqual(report["mode"], "deepseek")
+        self.assertEqual(report["validation"]["summary_defaults"], 5)
+        self.assertEqual(report["validation"]["editorial_replacements"], 5)
+        self.assertTrue(all(s.summary in s.article.excerpt for s in stories))
+
+    def test_wrong_summary_type_remains_a_schema_failure(self):
+        def change(content):
+            content["stories"][0].pop("summary_id")
+            content["stories"][0]["summary"] = []
+        _, report = self.run_response(self.mutate(change))
+        self.assertEqual(report["reason"], "malformed_response")
+        self.assertEqual(report["diagnostics"]["code"], "invalid_summary_schema")
+
     def test_legacy_summary_accepts_whitespace_only_changes_but_not_new_facts(self):
         def good(content):
             item = content["stories"][0]
