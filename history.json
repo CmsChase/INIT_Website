@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "publications": [
+    {
+      "id": "6d8874fd-1ad6-4906-a518-2dbbf840f2fc",
+      "date": "2026-11-11",
+      "status": "pending",
+      "created_at": "2026-11-11T03:27:18.176466+00:00",
+      "stories": [
+        {
+          "id": "a989f1582084d0cf153c32d2",
+          "url": "https://www.anthropic.com/claude-fable-and-mythos-5-2",
+          "title": "Claude Fable 5.2 and Mythos 5.2",
+          "primary_url": "https://www.anthropic.com/claude-fable-and-mythos-5-2"
+        },
+        {
+          "id": "8658a0744e2cda3c83edc739",
+          "url": "https://www.theverge.com/ai-artificial-intelligence/1030787/google-gemini-4-carbon-public-rollout",
+          "title": "Gemini 4 Carbon is now available",
+          "primary_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-4-carbon-now-available"
+        },
+        {
+          "id": "0e9fb0eb84f13acffdc59012",
+          "url": "https://deepmind.google/blog/introducing-alphaproof-code",
+          "title": "Introducing AlphaProof Code: a breakthrough in verifying complex software at depth",
+          "primary_url": "https://deepmind.google/blog/introducing-alphaproof-code"
+        }
+      ],
+      "payload_sha256": "135f5ed37444fb6c56651efdac80b50002bd94951bb38826c219de88d10b7c3a",
+      "payload": {
+        "username": "INIT Daily",
+        "content": "**INIT:// DAILY**  /  2026-11-11\n3 signals for people who build.\n-# Source excerpts · AI selection",
+        "embeds": [
+          {
+            "title": "01 / Claude Fable 5.2 and Mythos 5.2",
+            "url": "https://www.anthropic.com/claude-fable-and-mythos-5-2",
+            "description": "We’ve upgraded Claude Fable and Claude Mythos—models that are designed to tackle the most daunting technical challenges.",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Compare how access, pricing, and capabilities could change what individuals and small teams can build.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "Anthropic · 2026-11-09"
+            }
+          },
+          {
+            "title": "02 / Gemini 4 Carbon is now available",
+            "url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-4-carbon-now-available",
+            "description": "Access: for all paying developers and enterprises … It is also rolling out to all Google AI Ultra subscribers",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Consider how the stated access and pricing conditions could affect adoption by individuals and small teams.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "Google AI · 2026-11-10"
+            }
+          },
+          {
+            "title": "03 / Introducing AlphaProof Code: a breakthrough in verifying complex software at depth",
+            "url": "https://deepmind.google/blog/introducing-alphaproof-code",
+            "description": "From there, agents powered by Gemini Carbon did the proofs, generating over six million lines of Lean",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Consider how this could change access, competition, or trust in the AI tools people use and build with.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "Google DeepMind · 2026-11-10"
+            }
+          }
+        ],
+        "allowed_mentions": {
+          "parse": []
+        },
+        "flags": 4096
+      }
+    }
+  ]
+}
