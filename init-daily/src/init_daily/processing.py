@@ -127,7 +127,7 @@ def validate_response(content: str, candidates: list[Article], settings: Setting
     if not settings.min_stories <= len(items) <= settings.max_stories:
         raise ProcessingError("selection_validation_error", "invalid_story_count")
     by_id = {a.id: a for a in candidates}
-    result, seen, counts = [], set(), Counter()
+    result, seen, counts, policy_skips = [], set(), Counter(), Counter()
     research_count, editorial_replacements = 0, 0
     for index, item in enumerate(items):
         if not isinstance(item, dict) or not isinstance(item.get("id"), str):
@@ -137,20 +137,45 @@ def validate_response(content: str, candidates: list[Article], settings: Setting
         article = by_id[item["id"]]
         if article.id in seen:
             raise ProcessingError("selection_validation_error", "duplicate_article", index)
-        if counts[article.source_id] >= settings.max_per_source:
-            raise ProcessingError("selection_validation_error", "source_cap_exceeded", index)
-        research_count += int(is_research(article))
-        if research_count > settings.max_research_stories:
-            raise ProcessingError("selection_validation_error", "research_cap_exceeded", index)
+        # Validate evidence even on a story that may later exceed a policy cap.
+        # Policy repair must never become a way to accept fabricated claims.
         summary = _summary(item, article, index)
+        seen.add(article.id)
+        if counts[article.source_id] >= settings.max_per_source:
+            policy_skips["source_cap_exceeded"] += 1
+            continue
+        if is_research(article) and research_count >= settings.max_research_stories:
+            policy_skips["research_cap_exceeded"] += 1
+            continue
         category = score(article, now)[1]
         why, replaced = _editorial(item.get("why"), category)
         editorial_replacements += int(replaced)
         result.append(Story(article, summary, why, category, "deepseek"))
+        counts[article.source_id] += 1
+        research_count += int(is_research(article))
+    ai_selected_stories = len(result)
+    # Feed/ranking preflight has already established that enough eligible news
+    # exists. Keep the model's valid order and fill gaps using the same trusted
+    # shortlist, with both caps enforced against the choices already retained.
+    for article in candidates:
+        if len(result) >= len(items):
+            break
+        if article.id in seen or counts[article.source_id] >= settings.max_per_source:
+            continue
+        if is_research(article) and research_count >= settings.max_research_stories:
+            continue
+        category = score(article, now)[1]
+        result.append(Story(article, excerpt_summary(article.excerpt), RELEVANCE[category], category, "fallback"))
         seen.add(article.id)
         counts[article.source_id] += 1
+        research_count += int(is_research(article))
+    if len(result) < settings.min_stories:
+        raise ProcessingError("selection_validation_error", "insufficient_eligible_stories")
     if diagnostics is not None:
-        diagnostics.update(editorial_replacements=editorial_replacements)
+        diagnostics.update(editorial_replacements=editorial_replacements,
+                           ai_selected_stories=ai_selected_stories,
+                           rule_based_additions=len(result) - ai_selected_stories,
+                           policy_skips=dict(policy_skips))
     return result
 
 
@@ -270,6 +295,8 @@ def process(client: httpx.Client, candidates: list[Article], settings: Settings,
         details = {} if exc.item_index is None else {"item_index": exc.item_index}
         return fail(exc.reason, exc.code, **details)
     replacements = validation["editorial_replacements"]
-    log.info("DeepSeek accepted %s grounded stories; editorial replacements=%s", len(stories), replacements)
+    log.info("DeepSeek accepted %s grounded AI choices; rule-based additions=%s; policy skips=%s; editorial replacements=%s",
+             validation["ai_selected_stories"], validation["rule_based_additions"],
+             sum(validation["policy_skips"].values()), replacements)
     return stories, {**report, "mode": "deepseek", "validation": {
-        "grounding": "source_spans", "editorial_replacements": replacements}}
+        "grounding": "source_spans", **validation}}

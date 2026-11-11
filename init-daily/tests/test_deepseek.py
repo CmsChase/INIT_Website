@@ -10,7 +10,7 @@ import unittest
 import httpx
 
 from init_daily.config import load_settings
-from init_daily.models import Article
+from init_daily.models import Article, is_research
 from init_daily.processing import process, summary_options
 from init_daily.ranking import RELEVANCE
 
@@ -154,6 +154,45 @@ class DeepSeekRegressionTests(unittest.TestCase):
         _, report = self.run_response(response)
         self.assertEqual(report["reason"], "selection_validation_error")
         self.assertEqual(report["diagnostics"]["code"], "duplicate_article")
+
+    def test_live_research_cap_failure_is_repaired_without_discarding_ai_ranking(self):
+        # Reproduces run 42939629518: HTTP 200, stop, but >2 research choices.
+        self.articles[:3] = [replace(a, category="research") for a in self.articles[:3]]
+        response = httpx.Response(200, json=self.body())
+        self.articles.append(replace(self.articles[4], title="Another developer release", url="https://example.com/extra",
+                                     source_id="source-extra"))
+        stories, report = self.run_response(response)
+        self.assertEqual(report["mode"], "deepseek")
+        self.assertEqual(len(stories), 5)
+        self.assertEqual(sum(is_research(s.article) for s in stories), 2)
+        self.assertEqual(report["validation"]["policy_skips"], {"research_cap_exceeded": 1})
+        self.assertEqual(report["validation"]["ai_selected_stories"], 4)
+        self.assertEqual(report["validation"]["rule_based_additions"], 1)
+        self.assertEqual(stories[0].article.id, self.articles[0].id)
+        self.assertEqual(stories[1].article.id, self.articles[1].id)
+
+    def test_source_cap_is_enforced_during_policy_repair(self):
+        self.articles[:3] = [replace(a, source_id="shared-source") for a in self.articles[:3]]
+        response = httpx.Response(200, json=self.body())
+        self.articles.append(replace(self.articles[4], url="https://example.com/extra", source_id="source-extra"))
+        stories, report = self.run_response(response)
+        self.assertEqual(report["mode"], "deepseek")
+        self.assertEqual(sum(s.article.source_id == "shared-source" for s in stories), 2)
+        self.assertEqual(report["validation"]["policy_skips"], {"source_cap_exceeded": 1})
+        self.assertEqual(report["validation"]["rule_based_additions"], 1)
+
+    def test_policy_repair_never_ignores_invalid_evidence(self):
+        self.articles[:3] = [replace(a, category="research") for a in self.articles[:3]]
+        response = self.mutate(lambda c: c["stories"][2].update(summary_id=SENTINEL))
+        _, report = self.run_response(response)
+        self.assertEqual(report["mode"], "fallback")
+        self.assertEqual(report["reason"], "evidence_validation_error")
+
+    def test_repair_never_pads_with_stale_or_over_cap_candidates(self):
+        self.articles = [replace(a, category="research") for a in self.articles]
+        _, report = self.run_response(httpx.Response(200, json=self.body()))
+        self.assertEqual(report["mode"], "fallback")
+        self.assertEqual(report["diagnostics"]["code"], "insufficient_eligible_stories")
 
     def test_server_inserts_option_text_even_if_model_also_sends_fabrication(self):
         response = self.mutate(lambda c: c["stories"][0].update(summary=SENTINEL))
