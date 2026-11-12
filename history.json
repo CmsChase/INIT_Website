@@ -87,6 +87,69 @@
       },
       "message_id": "1569916409369198615",
       "resolved_at": "2026-11-11T03:27:19.869414+00:00"
+    },
+    {
+      "id": "c035bfde-df2b-4d83-8072-309b304ca1c5",
+      "date": "2026-11-12",
+      "status": "pending",
+      "created_at": "2026-11-12T08:15:36.034726+00:00",
+      "stories": [
+        {
+          "id": "fafff4292c09fd9370c59269",
+          "url": "https://blog.google/products-and-platforms/platforms/android/gemini-intelligence-november-features-devices",
+          "title": "Gemini Intelligence: New features, on more devices",
+          "primary_url": "https://blog.google/products-and-platforms/platforms/android/gemini-intelligence-november-features-devices"
+        },
+        {
+          "id": "c979be8e72cc92b8a0fbd6a0",
+          "url": "https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/gemini-for-healthcare",
+          "title": "Google Cloud launches Gemini for healthcare.",
+          "primary_url": "https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/gemini-for-healthcare"
+        }
+      ],
+      "payload_sha256": "28672d7873a8ddcdae376d86f07c0481b630f4b1c534d0546ad2af4a1226aa7f",
+      "payload": {
+        "username": "INIT Daily",
+        "content": "**INIT:// DAILY**  /  2026-11-12\n2 signals for people who build.\n-# Source excerpts · AI selection",
+        "embeds": [
+          {
+            "title": "01 / Gemini Intelligence: New features, on more devices",
+            "url": "https://blog.google/products-and-platforms/platforms/android/gemini-intelligence-november-features-devices",
+            "description": "Gemini Intelligence 1 brings the best of Gemini to Android devices, helping your devices work harder for you.",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Consider how this could change access, competition, or trust in the AI tools people use and build with.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "Google AI · 2026-11-10"
+            }
+          },
+          {
+            "title": "02 / Google Cloud launches Gemini for healthcare.",
+            "url": "https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/gemini-for-healthcare",
+            "description": "Google Cloud has announced Gemini for healthcare , an AI solution engineered to unify fragmented clinical, operational, and administrative systems.",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Consider how this could change access, competition, or trust in the AI tools people use and build with.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "Google AI · 2026-11-10"
+            }
+          }
+        ],
+        "allowed_mentions": {
+          "parse": []
+        },
+        "flags": 4096
+      }
     }
   ]
 }
