@@ -152,6 +152,69 @@
       },
       "message_id": "1570351349286051903",
       "resolved_at": "2026-11-12T08:15:37.539528+00:00"
+    },
+    {
+      "id": "08779c03-eba1-4cd2-815c-12c20aee08c3",
+      "date": "2026-11-13",
+      "status": "pending",
+      "created_at": "2026-11-13T06:24:48.677708+00:00",
+      "stories": [
+        {
+          "id": "d6d23163b98ddfa1ea7abe70",
+          "url": "https://blog.google/products-and-platforms/products/search/gemini-4-hydrogen-search-upgrade",
+          "title": "Google Search gets a major upgrade with Gemini 4 Hydrogen",
+          "primary_url": "https://blog.google/products-and-platforms/products/search/gemini-4-hydrogen-search-upgrade"
+        },
+        {
+          "id": "8eec2e0e61665676840d0b1f",
+          "url": "https://blogs.nvidia.com/blog/open-source-openshell-infrastructure",
+          "title": "NVIDIA Expands Open Source Commitment With OpenShell Contribution and New AI Infrastructure",
+          "primary_url": "https://blogs.nvidia.com/blog/open-source-openshell-infrastructure"
+        }
+      ],
+      "payload_sha256": "d48a2d6b794f5d7b3d61b1cd447b18db2fe43f19f0fa0f78d2106abcd0ebe449",
+      "payload": {
+        "username": "INIT Daily",
+        "content": "**INIT:// DAILY**  /  2026-11-13\n2 signals for people who build.\n-# Source excerpts · AI selection",
+        "embeds": [
+          {
+            "title": "01 / Google Search gets a major upgrade with Gemini 4 Hydrogen",
+            "url": "https://blog.google/products-and-platforms/products/search/gemini-4-hydrogen-search-upgrade",
+            "description": "This is the biggest model upgrade to Search yet.",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Compare how access, pricing, and capabilities could change what individuals and small teams can build.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "Google AI · 2026-11-12"
+            }
+          },
+          {
+            "title": "02 / NVIDIA Expands Open Source Commitment With OpenShell Contribution and New AI Infrastructure",
+            "url": "https://blogs.nvidia.com/blog/open-source-openshell-infrastructure",
+            "description": "“NVIDIA’s contribution of OpenShell to CNCF gives developers a shared foundation to build on and an opportunity to shape how agent security evolves.",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Consider whether this could reduce the time or cost of turning an idea into a working product.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "NVIDIA · 2026-11-10"
+            }
+          }
+        ],
+        "allowed_mentions": {
+          "parse": []
+        },
+        "flags": 4096
+      }
     }
   ]
 }
