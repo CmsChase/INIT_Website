@@ -217,6 +217,69 @@
       },
       "message_id": "1570685855092187189",
       "resolved_at": "2026-11-13T06:24:49.962080+00:00"
+    },
+    {
+      "id": "4fce72f3-b462-4513-afd6-7cb20d5ccd25",
+      "date": "2026-11-14",
+      "status": "pending",
+      "created_at": "2026-11-14T12:06:45.411509+00:00",
+      "stories": [
+        {
+          "id": "d7c21c501eb23f12ba47c234",
+          "url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-hydrogen",
+          "title": "Introducing Gemini 4 Hydrogen",
+          "primary_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-hydrogen"
+        },
+        {
+          "id": "31f08b59cb1733fd7c6ac128",
+          "url": "https://blogs.nvidia.com/blog/how-ai-is-helping-care-teams",
+          "title": "How AI Is Helping Care Teams Get Patients the Right Care, Sooner",
+          "primary_url": "https://blogs.nvidia.com/blog/how-ai-is-helping-care-teams"
+        }
+      ],
+      "payload_sha256": "d20a75ea14e843ac929e33ffc138e38d75fde24afc5db64bc41a92781c5d18ca",
+      "payload": {
+        "username": "INIT Daily",
+        "content": "**INIT:// DAILY**  /  2026-11-14\n2 signals for people who build.\n-# Source excerpts · AI selection",
+        "embeds": [
+          {
+            "title": "01 / Introducing Gemini 4 Hydrogen",
+            "url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-hydrogen",
+            "description": "We built Gemini 4 Hydrogen for real-world usability.",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Compare how access, pricing, and capabilities could change what individuals and small teams can build.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "Google AI · 2026-11-12"
+            }
+          },
+          {
+            "title": "02 / How AI Is Helping Care Teams Get Patients the Right Care, Sooner",
+            "url": "https://blogs.nvidia.com/blog/how-ai-is-helping-care-teams",
+            "description": "From pediatric research to smart hospitals, AI is helping care teams spend less time on routine tasks and more time with patients.",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Consider how this could change access, competition, or trust in the AI tools people use and build with.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "NVIDIA · 2026-11-13"
+            }
+          }
+        ],
+        "allowed_mentions": {
+          "parse": []
+        },
+        "flags": 4096
+      }
     }
   ]
 }
