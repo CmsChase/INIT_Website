@@ -161,6 +161,51 @@ class VerificationTests(unittest.TestCase):
             self.assertFalse(stories)
             self.assertEqual(audit["stories"][0]["code"], "primary_topic_mismatch")
 
+    def test_comparison_to_predecessor_does_not_reject_matching_launch(self):
+        url = "https://blog.google/introducing-gemini-4-hydrogen"
+        story = self.story("Google rolls out Gemini 4 Hydrogen, finally replacing 3.8 Flash",
+                           "https://arstechnica.com/google/gemini-4-hydrogen",
+                           "Gemini 4 Hydrogen handles everyday coding and agentic workflows.",
+                           "ars-ai", "reporting", (url,))
+        raw = page("Introducing Gemini 4 Hydrogen",
+                   "Gemini 4 Hydrogen is built for rapid execution across diverse agentic workflows.")
+        with httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(200, content=raw))) as client:
+            stories, audit = verify_selected([story], self.settings, client, NOW)
+        self.assertEqual([s.verified_url for s in stories], [url])
+        self.assertEqual(audit["checked"], 1)
+
+    def test_verifies_alternates_with_same_budget_and_history(self):
+        initial = self.story()
+        published = replace(initial.article, url=DEEP + "-old")
+        reserve = replace(initial.article, url=DEEP + "-alternate")
+        unused = replace(initial.article, url=DEEP + "-unused")
+        raw = page(initial.article.title, "AlphaProof Code agents generated over six million lines of Lean proofs for Signal.")
+
+        def handler(request):
+            if str(request.url) == initial.article.url:
+                return httpx.Response(403)
+            if str(request.url) == published.url:
+                return httpx.Response(302, headers={"location": DEEP + "-published"})
+            self.assertIn(str(request.url), (DEEP + "-published", reserve.url))
+            return httpx.Response(200, content=raw)
+
+        with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+            stories, audit = verify_selected([initial], replace(self.settings, verification_max_requests=4), client, NOW,
+                                             alternates=(published, reserve, unused),
+                                             previous=({"url": published.url, "primary_url": DEEP + "-published"},))
+        self.assertEqual([s.verified_url for s in stories], [reserve.url])
+        self.assertIn("over six million", stories[0].summary)
+        self.assertEqual(audit["http_requests"], 4)
+        self.assertEqual(audit["alternates_checked"], 2)
+        self.assertEqual(audit["alternates_used"], 1)
+        self.assertEqual(audit["stories"][1]["code"], "duplicate_primary_story")
+
+    def test_empty_editorial_selection_does_not_try_alternates(self):
+        with httpx.Client(transport=httpx.MockTransport(lambda r: self.fail("Unexpected request"))) as client:
+            stories, audit = verify_selected([], self.settings, client, NOW, alternates=(self.story().article,))
+        self.assertEqual(stories, [])
+        self.assertEqual(audit["http_requests"], 0)
+
     def test_history_deduplicates_discovery_and_verified_primary_urls(self):
         with tempfile.TemporaryDirectory() as temporary:
             story = replace(self.story(url="https://www.theverge.com/story", source="verge-ai", tier="reporting"), verified_url=DEEP)

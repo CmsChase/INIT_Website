@@ -34,7 +34,7 @@ class EditorialTests(unittest.TestCase):
 
     def test_production_sources_do_not_collect_raw_arxiv_or_routine_releases(self):
         ids = {s.id for s in self.settings.sources}
-        self.assertTrue({"openai", "google-ai", "deepmind", "anthropic", "microsoft", "nvidia", "meta"} <= ids)
+        self.assertTrue({"openai", "google-ai", "google-gemini", "deepmind", "anthropic", "microsoft", "nvidia", "meta"} <= ids)
         self.assertTrue({"techcrunch-ai", "verge-ai", "ars-ai"} <= ids)
         self.assertFalse({"arxiv-ai", "arxiv-robotics", "transformers"} & ids)
 
@@ -62,6 +62,11 @@ class EditorialTests(unittest.TestCase):
                            excerpt="An internal research workflow for tracking AI model workloads.")
         self.assertGreater(assess(launch, NOW).score, assess(internal, NOW).score + 3)
         self.assertLess(assess(internal, NOW).score, self.settings.min_score)
+
+    def test_customer_profile_cannot_fill_a_slot_by_company_name_alone(self):
+        article = replace(self.article("Gondola doubles revenue as its team builds more with Codex"),
+                          url="https://openai.com/business/customer-stories/gondola")
+        self.assertLess(assess(article, NOW).score, self.settings.min_score)
 
     def test_major_company_brand_does_not_promote_routine_deployment_recipes(self):
         article = replace(self.article("NVIDIA Dynamo Recipes Bring Open Models to Production", company="nvidia"),

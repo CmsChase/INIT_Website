@@ -52,7 +52,6 @@ teams building with AI. Avoid narrow jargon and generic implementation checklist
 It is editorial guidance, not a factual claim;
 use conditional language, do not claim capabilities, availability, or performance.
 Do not add numbers, URLs, markdown, mentions, promises, or facts to why.
-If evidence cannot support three useful stories, return {"stories":[]}.
 """
 
 _ACTIONS = {

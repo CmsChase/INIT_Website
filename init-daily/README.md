@@ -67,10 +67,10 @@ gh workflow run init-daily.yml --repo CmsChase/INIT_Website --ref main -f dry_ru
 
 Choose a **new** workflow run after pulling the fix; re-running an older run uses its older commit. Download the `init-daily-preview-RUN_ID-ATTEMPT` artifact and open `run.json`:
 
-- `status` should be `preview`, `publishing_requested` must be `false`, and `stories` should normally be 3–5. A quiet day can have 1–2 stories; no significant news produces `insufficient_news` and no message.
+- `publishing_requested` must be `false`. `preview` means a message is ready and a short briefing can contain one or two stories. `insufficient_news` means editorial selection found too little to publish. `insufficient_verified_news` means too few stories passed primary-source verification. Neither status attempts delivery.
 - Successful AI processing has `processing.mode = "deepseek"`, `http_status = 200`, `finish_reason = "stop"`, and `request_attempts = 1`. `usage` contains available numeric token counts.
 - `processing.validation.grounding = "source_spans"` means the application inserted verified source text. `summary_defaults` counts omitted optional summary selectors filled with the article's default source span. `editorial_replacements` counts suggestions replaced with trusted local guidance; these replacements do not discard successful AI selection. `ai_selected_stories` counts retained AI choices, `rule_based_additions` counts locally selected replacements, and `policy_skips` counts AI choices skipped to enforce source/research caps. A `deepseek` result can include these explicitly reported local repairs; all final stories still obey the caps.
-- With production configuration, also inspect `verification`: its selected stories must have `status = "primary_body_checked"`, current primary URLs, check timestamps, body hashes and the exact evidence quotes. AI selection counts describe the ranking stage; `verification.withheld` explains any reduction in the final story count. A green AI response alone is not the final factual-quality check.
+- With production configuration, confirm that the stories in the briefing appear as `primary_body_checked` in `verification.stories`, with current primary URLs, check timestamps, body hashes and exact evidence quotes. `verification.alternates_used` records replacements that passed the same checks. The `code` on each `withheld` record explains why that candidate could not be used.
 - On fallback, inspect `processing.reason`, `processing.diagnostics.code`, and `processing.diagnostics.action`. Available safe metadata includes HTTP status, recognized API error code/parameter, finish reason, token counts, and the zero-based index of a rejected story. A missing API key makes zero requests.
 
 | `processing.reason` | Meaning / next step |
@@ -103,7 +103,7 @@ Each briefing is a single message with up to five minimalist green-accented embe
 
 ## Activate automatic publishing
 
-Deployment has deliberately not been performed during development. To activate it:
+For a fresh repository deployment:
 
 1. Commit/push `init-daily/` and `.github/workflows/init-daily.yml` to the repository's **default branch**. Leave the existing website workflow in place.
 2. Under **Settings → Secrets and variables → Actions**, add repository **Secrets**:
@@ -117,9 +117,9 @@ Deployment has deliberately not been performed during development. To activate i
 4. Keep the repository **Variable** `INIT_DAILY_PUBLISH_ENABLED` absent or `false`. In **Actions → INIT Daily → Run workflow**, choose the default branch, leave **dry_run=true**, and inspect the job summary and downloadable `init-daily-preview-*` artifact. Set **no_ai=true** for a free test.
 5. When ready, set the repository **Variable** `INIT_DAILY_PUBLISH_ENABLED` to the exact string **`true`**. Scheduled runs can now post. To manually publish, run the workflow with **dry_run=false**; the repository variable must also be true. Do not enable it merely to preview.
 
-The schedule is `15 1 * * *` UTC, equivalent to **09:15 Asia/Shanghai** every day. Disabled publishing still runs a preview on that schedule. Manual runs on other branches are restricted to tests; the briefing job runs only on the default branch.
+The workflow starts preparation at **08:55 Asia/Shanghai (GMT+8)** and holds a completed briefing until the **09:15** delivery target. A second trigger at **09:15** covers a delayed or missed first trigger. The publish jobs share a concurrency group and a durable ledger, so a second run sees the day's prior delivery and exits before collecting news. If the preparation run arrives late, it attempts delivery as soon as the verified briefing is ready. Disabled publishing runs a preview on the 09:15 trigger. Manual publishing runs immediately, and only the default branch has access to the briefing jobs.
 
-GitHub scheduling is best effort: runs can be delayed or dropped, and public-repository schedules can be disabled after 60 days without activity. Check the Actions tab periodically; see [GitHub's scheduling notes](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule). The application does not backfill missed days or run a continuous server.
+GitHub can delay or drop either trigger. The job summary and `run.json` record `scheduled_for` and `schedule_start_offset_seconds`, measured when the briefing pipeline begins. On confirmed delivery they include the Discord `message_id`, and `run.json` records `published_at`. After a missed trigger, use the manual run described above to publish the current day's briefing. See [GitHub's scheduling notes](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule).
 
 To stop posting, set `INIT_DAILY_PUBLISH_ENABLED=false` in repository Variables. Disable the workflow in Actions if you also want to stop collection and previews. The Python command separately requires **both** `INIT_DAILY_PUBLISH_ENABLED=true` and `--publish` to send.
 
@@ -177,6 +177,7 @@ Default sources (availability checked 2026-11-11):
 | OpenAI | `https://openai.com/news/rss.xml` | First-party model/product/research announcements |
 | Google DeepMind | `https://deepmind.google/blog/rss.xml` | Models, research, robotics |
 | Google AI | `https://blog.google/innovation-and-ai/technology/ai/rss/` | Gemini, product features, partnerships |
+| Google Gemini models | `https://blog.google/innovation-and-ai/models-and-research/gemini-models/rss/` | First-party Gemini model announcements missed by the general AI feed |
 | Anthropic | `https://www.anthropic.com/news` | Dated official announcement cards; no RSS dependency |
 | Microsoft | `https://blogs.microsoft.com/feed/` | Copilot, AI infrastructure, strategic announcements |
 | NVIDIA | `https://blogs.nvidia.com/feed/` | AI platforms, hardware and significant ecosystem announcements |
@@ -207,7 +208,7 @@ This V1 deliberately uses extractive summaries rather than unrestricted paraphra
 
 The mainstream ranking stage still uses lightweight feeds. The final selected stories undergo a separate, deterministic check **after ranking and before preview or publication**. This closes two gaps found on 2026-11-11: DeepMind's RSS/meta teaser retained an older proof-line count, and a reporting lead omitted Gemini's paid-tier/subscriber restrictions. Exact copying from those snippets did not establish that a claim was current or complete.
 
-Production enables `[verification].enabled = true`. Only selected stories are checked: at most 12 total HTTP requests, including redirects and any reporting-page lookup, with an eight-second request timeout, a 2 MB page limit, no retries, and a per-run cache. No search API, browser, extra AI call, or automatic PDF pipeline is introduced. Offline fixtures keep this step disabled and remain entirely offline.
+Production enables `[verification].enabled = true`. Verification checks selected stories first and can use the remaining budget to check eligible alternates from the same shortlist. The shared limit is 12 total HTTP requests, including redirects and reporting-page lookups, with an eight-second timeout, a 2 MB page limit, and a per-run cache. Offline fixtures keep this step disabled and remain entirely offline.
 
 Official stories use the current linked article body. Reporting stories first use original-source links preserved from the feed's full content; if missing, one bounded read of the reporting article may locate a relevant official link. Only explicit known primary-publisher domains are accepted. Topic matching rejects unrelated references; metadata descriptions, navigation and page teasers are excluded as final evidence.
 
@@ -215,7 +216,7 @@ Final headlines and concise excerpts come from the current primary body. Quantit
 
 Every retained quote must be an exact span in the fetched primary body. `run.json.verification` records the current primary URL/headline, check time, body SHA-256, exact evidence spans, corrections/omissions and withholding reason codes. These are checks against what a primary publisher currently states, not independent verification of its scientific or commercial claims. Technical PDFs can be reviewed manually when warranted; the daily pipeline does not infer extra precision from a paper it has not fetched.
 
-If a primary page is unavailable, blocked, unrelated or beyond the request budget, the story is **withheld without falling back to the stale teaser or padding the digest**. Duplicate primary URLs are also suppressed. Publication history retains both the original discovery identity and the checked primary URL so follow-up feeds do not repost the same story under its original source link. Review the artifact before production activation; do not disable checks merely to force a full briefing.
+If a primary page is unavailable, blocked, unrelated or beyond the request budget, the story is withheld. A replacement must pass the same body checks, editorial threshold, source and research caps, and publication-history checks. The briefing can still be shorter than planned when too few alternates pass. An empty editorial selection stays empty. History retains both the original discovery identity and the checked primary URL to prevent follow-up feeds from reposting the same story.
 
 ## Project map and verification
 

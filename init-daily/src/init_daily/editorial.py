@@ -97,7 +97,8 @@ def assess(article: Article, now: datetime) -> Assessment:
     if names and re.search(r"\b(breakthrough|frontier|open.source|open.weight|infrastructure|accelerator|chip)\b", title):
         amount += 1.5
         signals.append("broad_capability_or_infrastructure")
-    if re.search(LOW_VALUE, title) or re.search(r"\b(uses? .* to|customer story|case study)\b", title):
+    if (re.search(LOW_VALUE, title) or re.search(r"\b(uses? .* to|customer story|case study)\b", title)
+            or "/customer-stories/" in article.url):
         amount -= 7
         signals.append("tutorial_or_promotion")
     if re.search(SPECULATION, title):

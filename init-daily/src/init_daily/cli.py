@@ -1,7 +1,7 @@
 import argparse
 from contextlib import nullcontext
 from dataclasses import replace
-from datetime import datetime, timezone
+from datetime import datetime, time, timezone
 import json
 import logging
 import os
@@ -27,6 +27,8 @@ def parser() -> argparse.ArgumentParser:
     mode = result.add_mutually_exclusive_group()
     mode.add_argument("--publish", action="store_true", help="Send only if INIT_DAILY_PUBLISH_ENABLED=true")
     mode.add_argument("--dry-run", action="store_true", help="Preview only; never write history or call Discord")
+    result.add_argument("--publish-at", type=time.fromisoformat, metavar="HH:MM",
+                        help="Hold a scheduled post until this local briefing time")
     result.add_argument("--no-ai", action="store_true", help="Use source excerpts without a paid API call")
     result.add_argument("--fixture", type=Path, help="Offline demo directory; forces no AI, no Discord")
     result.add_argument("--git-state", action="store_true", help="Use origin/init-daily-state as durable ledger")
@@ -53,6 +55,8 @@ def execute(args) -> int:
         raise ArgumentError("--fixture cannot be combined with publishing, remote history, or history commands")
     if args.command and args.publish:
         raise ArgumentError("History commands do not publish")
+    if args.publish_at and (not args.publish or args.publish_at.tzinfo):
+        raise ArgumentError("--publish-at requires --publish and a local HH:MM time")
     if args.publish and os.environ.get("INIT_DAILY_PUBLISH_ENABLED", "").lower() != "true":
         raise ArgumentError("Publishing is disabled. Set INIT_DAILY_PUBLISH_ENABLED=true and pass --publish to enable it")
     config_path = args.fixture / "config.toml" if args.fixture else args.config
@@ -86,12 +90,20 @@ def execute(args) -> int:
                           follow_redirects=False, trust_env=False) as client:
             report = run_pipeline(settings, history, client, now, send=args.publish,
                                   api_key=None if args.no_ai else os.environ.get("DEEPSEEK_API_KEY"),
-                                  webhook=os.environ.get("DISCORD_WEBHOOK_URL", ""), fixture=args.fixture)
+                                  webhook=os.environ.get("DISCORD_WEBHOOK_URL", ""), fixture=args.fixture,
+                                  publish_at=args.publish_at)
         log.info("Result: %s; %s stories. Preview: %s", report["status"], report["stories"], settings.output_dir)
         summary = os.environ.get("GITHUB_STEP_SUMMARY")
         if summary:
             with open(summary, "a", encoding="utf-8") as stream:
                 stream.write(f"## INIT:// Daily\n\nStatus: **{report['status']}** · Stories: {report['stories']}\n\n")
+                if "scheduled_for" in report:
+                    stream.write(f"Scheduled delivery: {report['scheduled_for']} · Pipeline start offset: "
+                                 f"{report['schedule_start_offset_seconds']:+d} seconds\n\n")
+                if "message_id" in report:
+                    stream.write(f"Discord confirmed message ID `{report['message_id']}`.\n\n")
+                if report["status"] == "insufficient_verified_news":
+                    stream.write("Too few stories passed primary-source checks. Discord was not contacted. See `run.json` for the withholding reasons.\n\n")
                 if "processing" in report:
                     stream.write("### Processing diagnostics\n\n```json\n")
                     stream.write(json.dumps(report["processing"], indent=2) + "\n```\n\n")

@@ -63,6 +63,11 @@ def excerpt_summary(text: str, limit: int = 320) -> str:
     return result or text[:limit - 1].rsplit(" ", 1)[0] + "…"
 
 
+def fallback_story(article: Article, now: datetime) -> Story:
+    category = score(article, now)[1]
+    return Story(article, excerpt_summary(article.excerpt), RELEVANCE[category], category, "fallback")
+
+
 def fallback(candidates: list[Article], settings: Settings, now: datetime) -> list[Story]:
     stories, counts, company_counts = [], Counter(), Counter()
     research_count = 0
@@ -77,8 +82,7 @@ def fallback(candidates: list[Article], settings: Settings, now: datetime) -> li
             continue
         if is_research(article) and research_count >= settings.max_research_stories:
             continue
-        category = score(article, now)[1]
-        stories.append(Story(article, excerpt_summary(article.excerpt), RELEVANCE[category], category, "fallback"))
+        stories.append(fallback_story(article, now))
         counts[article.source_id] += 1
         research_count += int(is_research(article))
         company_counts.update(companies(article))

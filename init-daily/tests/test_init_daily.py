@@ -1,5 +1,5 @@
 from dataclasses import replace
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, time, timedelta, timezone
 import io
 import json
 import logging
@@ -114,6 +114,63 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(len(loaded.pending), 1)
         with self.assertRaises(HistoryError):
             run_pipeline(self.settings, loaded, client, NOW + timedelta(days=1), send=True, webhook=WEBHOOK)
+
+    def test_scheduled_publish_prepares_then_waits_before_reserving_or_sending(self):
+        early = NOW - timedelta(minutes=20)
+        events = []
+
+        def handler(request):
+            if request.method == "GET":
+                return self.network(request)
+            events.append("post")
+            self.assertEqual(len(History(self.settings.history_path).pending), 1)
+            return httpx.Response(200, json={"id": "987654321"})
+
+        def wait(delay):
+            self.assertEqual(delay, 19 * 60)
+            self.assertTrue((self.settings.output_dir / "discord.json").exists())
+            self.assertFalse(self.settings.history_path.exists())
+            events.append("wait")
+
+        with patch("init_daily.pipeline.datetime", wraps=datetime) as clock, patch("init_daily.pipeline.sleep", side_effect=wait):
+            clock.now.side_effect = [early + timedelta(minutes=1), NOW]
+            result = run_pipeline(self.settings, History(self.settings.history_path), self.client(handler),
+                                  early, send=True, webhook=WEBHOOK, publish_at=time(9, 15))
+        self.assertEqual(events, ["wait", "post"])
+        self.assertEqual(result["scheduled_for"], "2026-11-11T09:15:00+08:00")
+        self.assertEqual(result["schedule_start_offset_seconds"], -1200)
+        self.assertEqual(result["status"], "published")
+
+    def test_delayed_schedule_sends_without_waiting_and_followup_skips(self):
+        late = NOW + timedelta(hours=6)
+        posts = []
+
+        def handler(request):
+            if request.method == "GET":
+                return self.network(request)
+            posts.append(request)
+            return httpx.Response(200, json={"id": "987654321"})
+
+        with patch("init_daily.pipeline.datetime", wraps=datetime) as clock, patch("init_daily.pipeline.sleep") as wait:
+            clock.now.return_value = late
+            client = self.client(handler)
+            for status in ("published", "already_published"):
+                result = run_pipeline(self.settings, History(self.settings.history_path), client,
+                                      late, send=True, webhook=WEBHOOK, publish_at=time(9, 15))
+                self.assertEqual(result["status"], status)
+                self.assertEqual(result["schedule_start_offset_seconds"], 6 * 60 * 60)
+            wait.assert_not_called()
+        self.assertEqual(len(posts), 1)
+
+    def test_delayed_trigger_outside_next_days_window_skips_without_collecting(self):
+        def denied(request):
+            self.fail("Scheduled run outside its delivery window made a network request")
+
+        after_midnight = NOW + timedelta(hours=15)
+        result = run_pipeline(self.settings, History(self.settings.history_path), self.client(denied),
+                              after_midnight, send=True, webhook=WEBHOOK, publish_at=time(9, 15))
+        self.assertEqual(result["status"], "outside_delivery_window")
+        self.assertFalse(self.settings.history_path.exists())
 
     def test_failed_reservation_never_posts(self):
         history = History(self.settings.history_path)

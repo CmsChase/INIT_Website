@@ -1,12 +1,9 @@
-"""Bounded current-primary-body checks AFTER selection; no additional AI call.
-
-Feeds and meta descriptions are discovery evidence, not final evidence for
-mutable claims. If a selected story cannot be checked, withhold it, without
-padding from unchecked candidates. This checks source claims, not their truth.
-"""
+"""Verify selections and eligible alternates against current primary articles."""
+from collections import Counter
 from dataclasses import replace
 from datetime import datetime
 from hashlib import sha256
+from itertools import chain
 import logging
 import re
 from urllib.parse import urljoin, urlsplit
@@ -15,9 +12,9 @@ import httpx
 
 from .config import Settings
 from .editorial import companies
-from .models import Story, canonical_url, trusted_url
+from .models import Article, Story, canonical_url, is_research, trusted_url
 from .news_index import _Index
-from .ranking import RELEVANCE, score
+from .ranking import RELEVANCE, fallback_story, score
 
 log = logging.getLogger(__name__)
 PRIMARY_HOSTS = {
@@ -47,6 +44,8 @@ def _words(text: str) -> set[str]:
 
 
 def _same_topic(discovery: str, primary: str) -> bool:
+    # A predecessor mentioned in a report is not part of the launched model's name.
+    discovery = re.split(r"\b(?:replacing|superseding|compared (?:with|to)|vs\.?)\b", discovery, maxsplit=1, flags=re.I)[0]
     a, b = _words(discovery), _words(primary)
     overlap = len(a & b)
     versions_a = set(re.findall(r"\b\d+(?:\.\d+)*\b", discovery))
@@ -223,13 +222,29 @@ def current_excerpt(story: Story, blocks: list[str]) -> tuple[str, list[str], di
 
 
 def verify_selected(stories: list[Story], settings: Settings, client: httpx.Client,
-                    now: datetime) -> tuple[list[Story], dict]:
+                    now: datetime, *, alternates: tuple[Article, ...] = (),
+                    previous: tuple[dict, ...] = ()) -> tuple[list[Story], dict]:
     reader = _Reader(client, settings)
-    accepted, records, primary_seen = [], [], set()
-    for story in stories:
+    accepted, records, primary_seen = [], [], {p.get("primary_url") or p["url"] for p in previous}
+    counts = Counter()
+    research_count = 0
+    selected_ids = {s.article.id for s in stories}
+    # Original selections are checked first. Only replace withheld selections.
+    # Explicitly empty AI selections and short briefings keep their intended size.
+    reserves = (fallback_story(a, now) for a in alternates if a.id not in selected_ids)
+    for story in chain(stories, reserves):
+        if len(accepted) == len(stories):
+            break
         article = story.article
+        alternate = article.id not in selected_ids
+        research = is_research(article)
+        if alternate and (reader.requests >= settings.verification_max_requests
+                          or counts[article.source_id] >= settings.max_per_source
+                          or (research and research_count >= settings.max_research_stories)):
+            continue
         record = {"article_id": article.id, "discovery_url": article.url,
-                  "discovery_headline": article.title, "checked_at": now.isoformat()}
+                  "discovery_headline": article.title, "checked_at": now.isoformat(),
+                  "selection": "alternate" if alternate else "initial"}
         names = companies(article)
         hosts = tuple(dict.fromkeys(host for name in names for host in PRIMARY_HOSTS.get(name, ())))
         # Explicitly configured official publishers are also trusted originals.
@@ -275,6 +290,8 @@ def verify_selected(stories: list[Story], settings: Settings, client: httpx.Clie
             accepted.append(replace(story, article=replace(article, title=title),
                                     summary=summary, why=why, verified_url=url, verified_source=issuer))
             primary_seen.add(url)
+            counts[article.source_id] += 1
+            research_count += int(research)
             record.update(status="primary_body_checked", primary_url=url, primary_source=issuer, body_sha256=sha256(raw).hexdigest(),
                           primary_headline=title,
                           evidence_quotes=quotes, summary_replaced=summary != story.summary,
@@ -285,4 +302,7 @@ def verify_selected(stories: list[Story], settings: Settings, client: httpx.Clie
             log.warning("Selected story %s withheld: %s", article.id, code)
         records.append(record)
     return accepted, {"enabled": True, "method": "current_primary_article_body", "http_requests": reader.requests,
-                      "checked": len(accepted), "withheld": len(stories) - len(accepted), "stories": records}
+                      "checked": len(accepted), "withheld": len(records) - len(accepted),
+                      "alternates_checked": sum(r["selection"] == "alternate" for r in records),
+                      "alternates_used": sum(r["selection"] == "alternate" and r["status"] == "primary_body_checked" for r in records),
+                      "stories": records}
