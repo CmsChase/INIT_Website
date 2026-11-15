@@ -18,7 +18,7 @@ on:
         type: boolean
         default: false
       scheduled_delivery:
-        description: 'Apply the daily 09:15 Asia/Shanghai delivery time'
+        description: 'Apply the scheduled delivery time in Asia/Shanghai'
         type: boolean
         default: false
   push:
@@ -132,10 +132,16 @@ jobs:
           INIT_DAILY_PUBLISH_ENABLED: 'true'
           NO_AI: ${{ inputs.no_ai || false }}
           SCHEDULED_DELIVERY: ${{ github.event_name == 'schedule' || inputs.scheduled_delivery }}
+          ONE_TIME_DELIVERY: ${{ vars.INIT_DAILY_ONE_TIME_DELIVERY }}
         run: |
           args=(--git-state --publish)
           if [[ "$SCHEDULED_DELIVERY" == "true" ]]; then
-            args+=(--publish-at 09:15)
+            delivery_time=09:15
+            local_date=$(TZ=Asia/Shanghai date +%F)
+            if [[ "$ONE_TIME_DELIVERY" == "$local_date"T* ]]; then
+              delivery_time=${ONE_TIME_DELIVERY#*T}
+            fi
+            args+=(--publish-at "$delivery_time")
           fi
           if [[ "$NO_AI" == "true" ]]; then
             args+=(--no-ai)

@@ -1,7 +1,11 @@
 const dispatchUrl = "https://api.github.com/repos/CmsChase/INIT_Website/actions/workflows/init-daily.yml/dispatches";
+const dailyCron = "5 1 * * *";
 
 export default {
-  async scheduled(_event, env) {
+  async scheduled(event, env) {
+    // A month/day Cron Trigger repeats annually. Match the full UTC instant for a one-time run.
+    if (event.cron !== dailyCron && event.scheduledTime !== Date.parse(env.ONE_TIME_TRIGGER_AT)) return;
+
     const token = env.GITHUB_DISPATCH_TOKEN;
     if (!token) throw new Error("Configure the GITHUB_DISPATCH_TOKEN Worker secret");
 

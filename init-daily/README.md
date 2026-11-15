@@ -137,6 +137,8 @@ npx --yes wrangler@4.162.0 secret put GITHUB_DISPATCH_TOKEN
 
 The new Worker defaults to preview mode. Use its Cron Events logs to confirm that GitHub accepted a dispatch and find the run ID. The corresponding Actions run should use the `preview` job. To activate delivery, set `LIVE_PUBLISH=true` in the Worker's **Settings → Variables and Secrets** after verifying the preview. The repository's `INIT_DAILY_PUBLISH_ENABLED` must also be `true`. The Worker holds only the GitHub dispatch credential. Existing DeepSeek and Discord secrets stay in GitHub. Rotate the GitHub token before its expiry by replacing the Worker secret. See [Cloudflare Cron Triggers](https://developers.cloudflare.com/workers/configuration/cron-triggers/) and the [GitHub workflow dispatch API](https://docs.github.com/en/rest/actions/workflows#create-a-workflow-dispatch-event).
 
+For a one-time delivery, set the GitHub variable `INIT_DAILY_ONE_TIME_DELIVERY` to the Asia/Shanghai date and time (`YYYY-MM-DDTHH:MM`). Add a Cloudflare trigger about ten minutes earlier and set the Worker variable `ONE_TIME_TRIGGER_AT` to the trigger's full UTC timestamp. The Worker checks the full timestamp, so a month/day cron cannot dispatch again the following year. The GitHub override applies only on its named date.
+
 For an intentional local production run, use the same shared remote ledger as Actions:
 
 ```powershell
