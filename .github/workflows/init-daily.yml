@@ -17,6 +17,10 @@ on:
         description: 'Use free rule-based fallback instead of DeepSeek'
         type: boolean
         default: false
+      scheduled_delivery:
+        description: 'Apply the daily 09:15 Asia/Shanghai delivery time'
+        type: boolean
+        default: false
   push:
     branches: [main]
     paths: ['init-daily/**', '.github/workflows/init-daily.yml']
@@ -47,6 +51,7 @@ jobs:
       - run: python -m pip install --no-deps -e .
       - run: python -m unittest discover -s tests -v
       - run: python -m init_daily --fixture fixtures --dry-run
+      - run: node --test scheduler/worker.test.mjs
 
   preview:
     needs: test
@@ -126,11 +131,10 @@ jobs:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           INIT_DAILY_PUBLISH_ENABLED: 'true'
           NO_AI: ${{ inputs.no_ai || false }}
-          SCHEDULE_TRIGGER: ${{ github.event.schedule }}
+          SCHEDULED_DELIVERY: ${{ github.event_name == 'schedule' || inputs.scheduled_delivery }}
         run: |
           args=(--git-state --publish)
-          if [[ -n "$SCHEDULE_TRIGGER" ]]; then
-            echo "Schedule trigger $SCHEDULE_TRIGGER (Asia/Shanghai)."
+          if [[ "$SCHEDULED_DELIVERY" == "true" ]]; then
             args+=(--publish-at 09:15)
           fi
           if [[ "$NO_AI" == "true" ]]; then

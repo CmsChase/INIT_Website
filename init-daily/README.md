@@ -123,6 +123,20 @@ GitHub can delay or drop either trigger. The job summary and `run.json` record `
 
 To stop posting, set `INIT_DAILY_PUBLISH_ENABLED=false` in repository Variables. Disable the workflow in Actions if you also want to stop collection and previews. The Python command separately requires **both** `INIT_DAILY_PUBLISH_ENABLED=true` and `--publish` to send.
 
+### Independent daily trigger
+
+`scheduler/` contains an optional Cloudflare Worker that dispatches INIT Daily at **09:05 Asia/Shanghai**, giving GitHub time to prepare before the **09:15** delivery target. The Worker sends `scheduled_delivery=true` to use the same hold time as GitHub's scheduled runs. The existing GitHub schedules remain as backups. All delivery paths share the concurrency group and durable history, so a late backup cannot post a second briefing for the same date.
+
+Create a [fine-grained GitHub token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token) for `CmsChase/INIT_Website` with **Actions: Read and write**. Deploy the Worker from `init-daily/scheduler/` and add the token at the private secret prompt:
+
+```powershell
+npx --yes wrangler@4.162.0 login
+npx --yes wrangler@4.162.0 deploy
+npx --yes wrangler@4.162.0 secret put GITHUB_DISPATCH_TOKEN
+```
+
+The new Worker defaults to preview mode. Use its Cron Events logs to confirm that GitHub accepted a dispatch and find the run ID. The corresponding Actions run should use the `preview` job. To activate delivery, set `LIVE_PUBLISH=true` in the Worker's **Settings → Variables and Secrets** after verifying the preview. The repository's `INIT_DAILY_PUBLISH_ENABLED` must also be `true`. The Worker holds only the GitHub dispatch credential. Existing DeepSeek and Discord secrets stay in GitHub. Rotate the GitHub token before its expiry by replacing the Worker secret. See [Cloudflare Cron Triggers](https://developers.cloudflare.com/workers/configuration/cron-triggers/) and the [GitHub workflow dispatch API](https://docs.github.com/en/rest/actions/workflows#create-a-workflow-dispatch-event).
+
 For an intentional local production run, use the same shared remote ledger as Actions:
 
 ```powershell

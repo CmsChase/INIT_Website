@@ -1,0 +1,13 @@
+name = "init-daily-scheduler"
+main = "worker.mjs"
+compatibility_date = "2026-11-15"
+workers_dev = false
+preview_urls = false
+keep_vars = true
+
+[triggers]
+# Cloudflare schedules in UTC. Prepare at 09:05 GMT+8 for delivery at 09:15.
+crons = ["5 1 * * *"]
+
+[observability]
+enabled = true
