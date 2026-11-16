@@ -325,6 +325,69 @@
       },
       "message_id": "1571423705869852785",
       "resolved_at": "2026-11-15T07:16:47.363487+00:00"
+    },
+    {
+      "id": "8bc9211f-1ad7-4f17-ad81-3c2c4de067b5",
+      "date": "2026-11-16",
+      "status": "pending",
+      "created_at": "2026-11-16T07:23:04.151589+00:00",
+      "stories": [
+        {
+          "id": "d16c86f834412880e1d6e0a8",
+          "url": "https://blogs.nvidia.com/blog/ai-day-seoul-wrapup",
+          "title": "AI Day Seoul Brings Together Korea’s Industry Leaders, Startups and Developer Communities",
+          "primary_url": "https://blogs.nvidia.com/blog/ai-day-seoul-wrapup"
+        },
+        {
+          "id": "ed8a714b90bf2d22a5799eb9",
+          "url": "https://about.fb.com/news/2026/11/94-of-singapore-small-business-owners-surveyed-say-more-ai-guidance-is-needed",
+          "title": "94% of Singapore Small Business Owners Surveyed Say More AI Guidance Is Needed",
+          "primary_url": "https://about.fb.com/news/2026/11/94-of-singapore-small-business-owners-surveyed-say-more-ai-guidance-is-needed"
+        }
+      ],
+      "payload_sha256": "73f9c453e54109de2bb07b7e6cc5865a57d09565068b937d4d607d9146f4cbd4",
+      "payload": {
+        "username": "INIT Daily",
+        "content": "**INIT:// DAILY**  /  2026-11-16\n2 signals for people who build.\n-# Source excerpts · AI selection",
+        "embeds": [
+          {
+            "title": "01 / AI Day Seoul Brings Together Korea’s Industry Leaders, Startups and Developer Communities",
+            "url": "https://blogs.nvidia.com/blog/ai-day-seoul-wrapup",
+            "description": "More than 500 developers also took part in full-day NVIDIA Deep Learning Institute workshops and NVIDIA Certification exams in Korean.",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Consider whether this could reduce the time or cost of turning an idea into a working product.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "NVIDIA · 2026-11-16"
+            }
+          },
+          {
+            "title": "02 / 94% of Singapore Small Business Owners Surveyed Say More AI Guidance Is Needed",
+            "url": "https://about.fb.com/news/2026/11/94-of-singapore-small-business-owners-surveyed-say-more-ai-guidance-is-needed",
+            "description": "Meta Upskill Day 2026 brought Singapore small businesses, heartland merchants and creator-entrepreneurs together for practical training on Meta Business Agents and AI-powered business tools.",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Consider how this could change access, competition, or trust in the AI tools people use and build with.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "Meta · 2026-11-16"
+            }
+          }
+        ],
+        "allowed_mentions": {
+          "parse": []
+        },
+        "flags": 4096
+      }
     }
   ]
 }
