@@ -390,6 +390,69 @@
       },
       "message_id": "1571787682248392750",
       "resolved_at": "2026-11-16T07:23:06.311775+00:00"
+    },
+    {
+      "id": "00e6d5c0-2354-4de4-b4ff-07fb1d297ebf",
+      "date": "2026-11-17",
+      "status": "pending",
+      "created_at": "2026-11-17T08:35:04.232812+00:00",
+      "stories": [
+        {
+          "id": "8f02058f4a02dc51d60cbdb3",
+          "url": "https://blogs.nvidia.com/blog/rubin-hpc",
+          "title": "NVIDIA Announces Rubin HPC — A New GPU to Accelerate Agents for Science, Engineering and Analytics",
+          "primary_url": "https://blogs.nvidia.com/blog/rubin-hpc"
+        },
+        {
+          "id": "a9995c40a3422c0483b7ef52",
+          "url": "https://blogs.nvidia.com/blog/ai-infrastructure-supply-chain",
+          "title": "How the World’s Most Advanced AI Infrastructure Supply Chain Invents the Future",
+          "primary_url": "https://blogs.nvidia.com/blog/ai-infrastructure-supply-chain"
+        }
+      ],
+      "payload_sha256": "52b95a77f19b4d45c2c5212f05e580d9c9fe1e8cbda3093f457fa0e6e8f7c8f9",
+      "payload": {
+        "username": "INIT Daily",
+        "content": "**INIT:// DAILY**  /  2026-11-17\n2 signals for people who build.\n-# Source excerpts · AI selection",
+        "embeds": [
+          {
+            "title": "01 / NVIDIA Announces Rubin HPC — A New GPU to Accelerate Agents for Science, Engineering and Analytics",
+            "url": "https://blogs.nvidia.com/blog/rubin-hpc",
+            "description": "“For agents tackling science and engineering, faster simulation means faster discovery,” said Ian Buck , vice president of hyperscale and high-performance computing at NVIDIA.",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Consider which tasks this could automate and where human oversight would still be needed.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "NVIDIA · 2026-11-16"
+            }
+          },
+          {
+            "title": "02 / How the World’s Most Advanced AI Infrastructure Supply Chain Invents the Future",
+            "url": "https://blogs.nvidia.com/blog/ai-infrastructure-supply-chain",
+            "description": "That description sums up the job, but it doesn’t begin to encompass what Shoquist has made possible over decades.",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Consider how this could change access, competition, or trust in the AI tools people use and build with.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "NVIDIA · 2026-11-16"
+            }
+          }
+        ],
+        "allowed_mentions": {
+          "parse": []
+        },
+        "flags": 4096
+      }
     }
   ]
 }
