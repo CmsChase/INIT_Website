@@ -122,9 +122,12 @@ def assess(article: Article, now: datetime) -> Assessment:
     if re.search(r"\b(our research infrastructure|internal research|internal workflow|at corl|at iclr|at neurips)\b", text):
         amount -= 4
         signals.append("niche_internal_or_conference_update")
-    if re.search(r"\b(survey(?:ed)?|survey says|ai day|brings? together|meetup|community event|supply chain invents the future)\b", title):
+    if re.search(r"\b(survey(?:ed)?|survey says|ai day|brings? together|meetup|community event)\b", title):
         amount -= 7
         signals.append("survey_event_or_profile")
+    if re.search(r"^(?:how|inside|meet|a day in)\b", title) and not (launch or strategy or corporate or security):
+        amount -= 5
+        signals.append("explainer_or_profile")
     if re.search(r"\b(paper|preprint|survey|benchmark study|ablation)\b", title) and not (names and launch):
         amount -= 7
         signals.append("niche_research")

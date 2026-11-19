@@ -29,12 +29,14 @@ PRIMARY_HOSTS = {
     "alibaba": ("www.alibabacloud.com", "qwenlm.github.io"),
 }
 PRICE = re.compile(r"[$€£]|\b(?:price|pricing|priced|introductory rate|per million tokens)\b", re.I)
-ACCESS = re.compile(r"\b(?:available|availability|access|rolling out|rollout|bringing|paid tier|preview|try|general public|everyone)\b", re.I)
-RESTRICT = re.compile(r"\b(?:paid|paying|subscribers?|subscription|eligible|eligibility|only|waitlist|apply for access|verification programs?|subject to)\b", re.I)
+ACCESS = re.compile(r"\b(?:available|availability|access|roll out|rolling out|rollout|bringing|paid tier|preview|try|general public|everyone)\b", re.I)
+RESTRICT = re.compile(r"\b(?:paid|paying|subscribers?|subscription|eligible|eligibility|only|waitlist|private preview|Frontier customers|customers in Frontier|apply for access|verification programs?|subject to)\b", re.I)
 QUANTITY = re.compile(r"\b(?:\d+(?:\.\d+)?|one|two|three|four|five|six|seven|eight|nine|ten)\s+(?:(?:million|billion|thousand)\s+)?(?:lines|users|tokens|hours|days|percent)\b|\d+(?:\.\d+)?%", re.I)
 STOP = {"a", "an", "the", "to", "in", "of", "for", "and", "is", "with", "new", "now", "our", "introducing", "releases", "release", "available", "google", "openai", "anthropic"}
 TOPIC_STOP = STOP | {"ai", "model", "models", "says", "can", "which", "its", "access", "expands", "help", "from", "update", "updates"}
 OPENAI_CHANGELOG = "https://developers.openai.com/api/docs/changelog.md"
+PROMOTIONAL = re.compile(r"\b(?:our vision|becoming real|exceptional technology leader|world leader|more powerful without)\b", re.I)
+CAPABILITY = re.compile(r"\b(?:can|enables?|allows?|supports?|selects?|routes?|integrates?|introduces?|adds?|connects?|manages?)\b", re.I)
 
 
 class VerificationError(ValueError):
@@ -260,12 +262,14 @@ def current_excerpt(story: Story, blocks: list[str]) -> tuple[str, list[str], di
             if ((PRICE.search(sentence) and not financial_metric) or ACCESS.search(sentence) or RESTRICT.search(sentence)):
                 continue
             quote = _short_quote(sentence)
-            if not quote or len(quote.split()) < 8:
+            if not quote or len(quote.split()) < 8 or PROMOTIONAL.search(quote):
                 continue
             overlap = len(topic & _words(quote))
-            if overlap < 1:
+            capability = bool(CAPABILITY.search(quote))
+            if overlap < 1 and not (index < 8 and capability):
                 continue
             priority = overlap + min(2, len(quote.split()) / 10) - index * .02
+            priority += 4 if capability else 0
             priority += 10 if old_quantity and QUANTITY.search(quote) else 0
             priority += (4 + 8 / (index + 1)) if financial_metric else 0
             candidates.append((priority, quote))
@@ -352,10 +356,19 @@ def verify_selected(stories: list[Story], settings: Settings, client: httpx.Clie
                           next((s.name for s in publisher_sources if primary_host in s.allowed_hosts), primary_host))
             why = ("Check eligibility and rollout scope before planning to use or recommend this capability."
                    if details.get("access_conditions_retained") else RELEVANCE[score(article, now)[1]])
+            if details.get("access_conditions_retained") and re.search(r"\bworld models?\b", " ".join(blocks[:8]), re.I):
+                why = "Explore whether interactive world models could support prototyping, games, or simulation; check access limits before committing."
+            elif details.get("access_conditions_retained") and re.search(r"\bautonomous agent\b", " ".join(blocks[:10]), re.I):
+                why = "Consider which workflows an autonomous agent could handle, what approvals it needs, and whether your team is eligible."
             if "major_corporate_development" in assess(article, now).signals:
-                why = ("Watch whether the results change expectations for AI infrastructure demand and the company's ability to sustain its roadmap."
-                       if re.search(r"\b(?:financial results|earnings)\b", title, re.I) else
-                       "Watch whether this changes the product roadmap, developer support, or infrastructure commitments; do not assume an effect before it is announced.")
+                if re.search(r"\b(?:financial results|earnings)\b", title, re.I):
+                    why = "Watch whether the results change expectations for AI infrastructure demand and the company's ability to sustain its roadmap."
+                elif re.search(r"\b(?:ceo|chief executive|resign|exit|departure)\b", title, re.I):
+                    why = "A leadership transition could affect roadmap confidence and developer support; watch for changes to the company's commitments."
+                elif re.search(r"\b(?:supply chain|infrastructure)\b", title, re.I):
+                    why = "Changes to infrastructure commitments could affect compute availability, supplier resilience, and the cost of building with AI."
+                else:
+                    why = "Changes in governance or export policy could affect where AI hardware is sold and how teams plan infrastructure."
             accepted.append(replace(story, article=replace(article, title=title),
                                     summary=summary, why=why, verified_url=url, verified_source=issuer))
             primary_seen.add(url)

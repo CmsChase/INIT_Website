@@ -76,7 +76,8 @@ class CoverageTests(unittest.TestCase):
             self.assertGreaterEqual(assess(article, NOW).score, 12)
         for title in ("AI Day Seoul Brings Together Industry Leaders",
                       "94% of Small Business Owners Surveyed Say More AI Guidance Is Needed",
-                      "How the World's Most Advanced AI Infrastructure Supply Chain Invents the Future"):
+                      "How the World's Most Advanced AI Infrastructure Supply Chain Invents the Future",
+                      "How AI Is Helping Care Teams Get Patients the Right Care, Sooner"):
             self.assertLess(assess(self.story(title).article, NOW).score, self.settings.min_score)
 
     def test_corporate_exception_does_not_promote_unrelated_meta_news(self):
@@ -192,6 +193,25 @@ class CoverageTests(unittest.TestCase):
             "NVIDIA is a company that builds important AI infrastructure and computing platforms."])
         self.assertEqual(summary, "Revenue of $115.8 billion, up 103% from a year ago")
         self.assertEqual(quotes, [summary])
+
+    def test_summary_selects_a_product_capability_over_an_empty_press_intro(self):
+        story = self.story("Copilot at Microsoft Ignite: Expanding what is possible", company="microsoft")
+        intro = "This morning, at Microsoft Ignite 2026, we shared how our vision for Copilot is becoming real for customers."
+        fact = "Under the hood, Auto dynamically selects the right models and effort for the task, balancing quality, speed, and cost."
+        summary, quotes, _ = current_excerpt(story, [intro, fact])
+        self.assertEqual(summary, fact)
+        self.assertEqual(quotes, [fact])
+
+    def test_copilot_frontier_rollout_is_not_presented_as_general_availability(self):
+        story = self.story("Copilot at Microsoft Ignite", company="microsoft")
+        scope = "And Autopilot is beginning to roll out to Frontier customers today."
+        summary, quotes, details = current_excerpt(story, [
+            "Home and Office in Copilot are now generally available. " + scope,
+            "Autopilot can manage recurring work and coordinate business tasks without waiting for a prompt."])
+        self.assertIn("Frontier customers", summary)
+        self.assertNotIn("generally available", summary)
+        self.assertEqual(quotes, [scope])
+        self.assertTrue(details["access_conditions_retained"])
 
 
 if __name__ == "__main__":
