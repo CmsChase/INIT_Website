@@ -149,6 +149,17 @@ class CoverageTests(unittest.TestCase):
                 stories, _ = verify_selected([story], self.settings, client, NOW)
             self.assertFalse(stories)
 
+    def test_new_model_variant_names_cannot_bypass_linked_body_checks(self):
+        url = "https://blog.google/gemini-4-oxygen-launch"
+        story = self.story("Google releases Gemini 4 Oxygen", "https://techcrunch.com/google-model",
+                           source_id="techcrunch-ai", tier="reporting", company="google", reference_urls=(url,))
+        raw = page("Gemini 4 Chlorine is now available",
+                   "Gemini 4 Oxygen was the previous model before this new launch.")
+        with httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(200, content=raw))) as client:
+            stories, audit = verify_selected([story], self.settings, client, NOW)
+        self.assertFalse(stories)
+        self.assertEqual(audit["stories"][0]["code"], "primary_topic_mismatch")
+
     def test_one_redirect_loop_cannot_use_every_other_storys_budget(self):
         first = self.story("Google introduces a new Gemini model", "https://blog.google/loop", source_id="google-ai", company="google")
         second = self.story("NVIDIA Announces CEO Transition", "https://nvidianews.nvidia.com/news/ceo-transition", source_id="nvidia-newsroom", company="nvidia")

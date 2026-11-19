@@ -69,8 +69,12 @@ def _linked_topic(discovery: str, primary: str, url: str, blocks: list[str]) -> 
     versions = lambda s: set(re.findall(r"\b\d+(?:\.\d+)*\b", s))
     if versions(discovery) and versions(primary) and not versions(discovery) <= versions(primary):
         return False
-    model = r"\b(gemini|gpt|grok|llama|deepseek)[\s\-‑]*(\d+(?:\.\d+)*)[\s\-‑]*(carbon|argon|hydrogen|astra|sol|flash|pro|ultra)?\b"
-    names_a, names_b = set(re.findall(model, discovery.lower())), set(re.findall(model, primary.lower()))
+    model = r"\b(gemini|gpt|grok|llama|deepseek)[\s\-‑]*(\d+(?:\.\d+)*)(?:[\s\-‑]+([a-z]+))?\b"
+    ordinary = TOPIC_STOP | {"launch", "launches", "arrives", "introduces", "has", "can", "will", "was", "are"}
+    def identities(text):
+        return {(brand, version, "" if label in ordinary else label)
+                for brand, version, label in re.findall(model, text.lower())}
+    names_a, names_b = identities(discovery), identities(primary)
     if names_a and names_b and not names_a & names_b:
         return False
     tokens = _words(discovery) - TOPIC_STOP
@@ -337,7 +341,7 @@ def verify_selected(stories: list[Story], settings: Settings, client: httpx.Clie
                         url, raw, title, blocks = _openai_documentation(reader, article)
                         method = "dated_official_api_changelog"
                     title_match = _same_topic(article.title, title)
-                    if not title_match and not _linked_topic(article.title, title, url, blocks):
+                    if not title_match and (primary_publisher or not _linked_topic(article.title, title, url, blocks)):
                         raise VerificationError("primary_topic_mismatch")
                     if url in primary_seen:
                         raise VerificationError("duplicate_primary_story")
