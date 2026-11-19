@@ -107,6 +107,11 @@ def execute(args) -> int:
                 if "processing" in report:
                     stream.write("### Processing diagnostics\n\n```json\n")
                     stream.write(json.dumps(report["processing"], indent=2) + "\n```\n\n")
+                if "verification" in report:
+                    checks = report["verification"]
+                    stream.write(f"Primary checks retained **{checks['checked']}/{checks['requested']}** requested stories. "
+                                 f"HTTP requests: {checks['http_requests']}. "
+                                 f"Withholding reasons: `{json.dumps(checks['withheld_codes'])}`.\n\n")
                 stream.write((settings.output_dir / "briefing.md").read_text(encoding="utf-8"))
     return 0
 

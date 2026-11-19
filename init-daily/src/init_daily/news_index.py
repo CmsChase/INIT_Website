@@ -6,10 +6,44 @@ links, and never substitutes page-update dates for publication dates.
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from html.parser import HTMLParser
+import re
 from urllib.parse import urljoin
 
 from .config import Settings, Source
 from .models import Article, canonical_url, trusted_url
+
+
+def changelog_entries(body: bytes) -> list[tuple[datetime, list[str]]]:
+    """Read dated API changelog sections, never navigation or another day's text.
+
+    Official Markdown is a supported public endpoint. Strip link syntax only;
+    resulting evidence still has to match the current section verbatim.
+    """
+    entries, year, published, lines = [], None, None, []
+
+    def finish():
+        if published and lines:
+            text = re.sub(r"\[([^\]]+)\]\([^\n)]*\)", r"\1", "\n".join(lines))
+            blocks = [" ".join(p.split()) for p in text.split("\n\n") if p.strip()]
+            if blocks:
+                entries.append((published, blocks))
+
+    for line in body.decode("utf-8").splitlines():
+        month = re.fullmatch(r"## \w+, (\d{4})", line)
+        day = re.fullmatch(r"### ([A-Za-z]+ \d{1,2})", line)
+        if month or day:
+            finish()
+            published, lines = None, []
+            if month:
+                year = month.group(1)
+            elif year:
+                published = _published(f"{day.group(1)}, {year}")
+        elif published:
+            # Model/API tags describe several entries, not the announcement body.
+            if not re.match(r"^(?:Feature|Update|Fix|Deprecation)(?: ·|$)", line):
+                lines.append(line)
+    finish()
+    return entries
 
 
 @dataclass

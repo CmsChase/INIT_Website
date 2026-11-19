@@ -89,6 +89,9 @@ def run_pipeline(settings: Settings, history: History, client: httpx.Client, now
         stories, verification = verify_selected(stories, settings, client, now,
                                                alternates=tuple(alternates), previous=tuple(previous))
         report["verification"] = verification
+        if verification["shortfall"]:
+            log.warning("Primary checks retained %s of %s requested stories; withholding reasons: %s",
+                        len(stories), verification["requested"], verification["withheld_codes"])
     report.update(stories=len(stories), processing=ai_report)
     report["editorial"].update(
         selected=[candidate_record(s.article, now) for s in stories],

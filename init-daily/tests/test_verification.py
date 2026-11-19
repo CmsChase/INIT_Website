@@ -90,10 +90,11 @@ class VerificationTests(unittest.TestCase):
         self.assertNotIn("$4", summary)
         self.assertTrue(details["pricing_omitted"])
 
-    def test_cannot_shorten_a_sentence_by_dropping_eligibility(self):
+    def test_complete_short_sentence_keeps_eligibility_instead_of_dropping_it(self):
         body = ["Gemini 4 Carbon is available to a broad range of developers building advanced AI applications, but only to eligible paid accounts."]
-        with self.assertRaises(ValueError):
-            current_excerpt(self.story("Gemini 4 Carbon launch", GOOGLE), body)
+        summary, quotes, _ = current_excerpt(self.story("Gemini 4 Carbon launch", GOOGLE), body)
+        self.assertIn("but only to eligible paid accounts", summary)
+        self.assertEqual(quotes, body)
 
     def test_secondary_feed_primary_reference_is_used_and_displayed(self):
         story = self.story("Google releases Gemini 4 Carbon", "https://www.theverge.com/news/carbon",

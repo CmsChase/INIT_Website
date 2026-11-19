@@ -11,7 +11,7 @@ from .models import Article, is_research
 
 COMPANIES = {
     "openai": r"\b(openai|chatgpt|codex|gpt[- .]?\d)\b",
-    "google": r"\b(google|deepmind|gemini|alphafold|alphaproof|veo)\b",
+    "google": r"\b(google|deepmind|gemini|genie|alphafold|alphaproof|veo)\b",
     "anthropic": r"\b(anthropic|claude)\b",
     "meta": r"\b(meta ai|meta|llama)\b",
     "xai": r"\b(xai|x\.ai|grok|spacexsi)\b",
@@ -26,6 +26,10 @@ AI = r"\b(ai|artificial intelligence|model(?:s)?|llm(?:s)?|chatgpt|claude|gemini
 LAUNCH = r"\b(introduc(?:ing|es)|launch(?:es|ed)?|unveil(?:s|ed)?|releas(?:e|es|ed)|roll(?:s|ing)? out|new features?|new capabilities|new (?:flagship |frontier )?model|now available|upgrade(?:s)?|expand(?:s|ed)?|adds?|bring(?:s|ing)?|debuts?)\b"
 STRATEGY = r"\b(partnership|partner(?:s|ing|ed)? (?:with|to)|acquir(?:e[sd]?|ing)|acquisition|merger|strategic|agreement|integration|integrat(?:e[sd]?|ing)|investment|ipo|public offering)\b"
 SECURITY = r"\b(security|breach|leaks?|leaked|regulation|oversight|safety law|ai act|ban(?:ned)?)\b"
+CORPORATE = r"\b(ceo|chief executive|leadership transition|resign(?:s|ed|ation)?|steps? down|exit|departure|financial results|earnings|export control|supply chain (?:partners|commitments)|national security)\b"
+# These companies' leadership and business decisions directly affect the AI
+# industry even when a corporate headline does not contain the letters 'AI'.
+AI_CORE_COMPANIES = {"openai", "anthropic", "nvidia", "deepseek", "xai"}
 LOW_VALUE = r"\b(tutorial|beginners?|step.by.step|how to|a guide to|developer.s guide|webinar|register now|weekly roundup|roadshow|case study|customer stor(?:y|ies)|ships? \d+x more|scales? .*development)\b"
 SPECULATION = r"\b(rumou?rs?|reportedly|might launch|could launch|may launch|expected to launch|is winning the .*race|could have)\b"
 RELEASE_PATCH = r"\bv?\d+\.\d+\.[1-9]\d*(?:\b|rc)|\b(pre.release|release candidate|changelog|bug.fix|maintenance release)\b"
@@ -52,14 +56,15 @@ def assess(article: Article, now: datetime) -> Assessment:
     names = companies(article)
     signals = []
     category = article.category or "industry"
+    corporate = bool(set(names) & AI_CORE_COMPANIES and re.search(CORPORATE, title))
     # Standalone preprints need independent editorial confirmation: significant
     # research can still enter via a company's announcement or reputable reporting.
     if is_research(article) or article.source_tier == "research":
         return Assessment(0, "research", names, ("standalone_research",))
-    if not re.search(AI, text) and not article.category:
+    if not re.search(AI, text) and not article.category and not corporate:
         return Assessment(0, category, names, ("not_ai_news",))
     strategy = bool(re.search(STRATEGY, title))
-    if not article.ai_focused_source and not (re.search(AI, title) or strategy):
+    if not article.ai_focused_source and not (re.search(AI, title) or strategy or corporate):
         return Assessment(0, category, names, ("not_ai_headline",))
     launch = bool(re.search(LAUNCH, title))
     security = bool(re.search(SECURITY, title))
@@ -77,11 +82,15 @@ def assess(article: Article, now: datetime) -> Assessment:
         amount += 2.5
         category = "strategy"
         signals.append("strategic_development")
+    if corporate:
+        amount += 4.5
+        category = "strategy"
+        signals.append("major_corporate_development")
     if security:
         amount += 2.0
         category = "industry"
         signals.append("security_or_regulation")
-    if re.search(r"\b(new (?:flagship |frontier |foundation |ai )?models?|gpt[- .]?\d|claude (?:opus|sonnet|haiku|fable|mythos)|gemini \d|grok \d|llama \d|qwen[- .]?\d|deepseek[- .]?[vr]\d)", title) and launch:
+    if re.search(r"\b(new (?:flagship |frontier |foundation |ai )?models?|gpt[- .]?\d|claude (?:opus|sonnet|haiku|fable|mythos)|(?:gemini|genie) \d|grok \d|llama \d|qwen[- .]?\d|deepseek[- .]?[vr]\d)", title) and launch:
         amount += 3
         category = "models"
         signals.append("model_launch")
@@ -113,6 +122,9 @@ def assess(article: Article, now: datetime) -> Assessment:
     if re.search(r"\b(our research infrastructure|internal research|internal workflow|at corl|at iclr|at neurips)\b", text):
         amount -= 4
         signals.append("niche_internal_or_conference_update")
+    if re.search(r"\b(survey(?:ed)?|survey says|ai day|brings? together|meetup|community event|supply chain invents the future)\b", title):
+        amount -= 7
+        signals.append("survey_event_or_profile")
     if re.search(r"\b(paper|preprint|survey|benchmark study|ablation)\b", title) and not (names and launch):
         amount -= 7
         signals.append("niche_research")

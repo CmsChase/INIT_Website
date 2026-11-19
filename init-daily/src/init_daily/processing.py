@@ -21,11 +21,16 @@ Highest priority: meaningful model launches, major product/capability updates,
 important partnerships, distribution/access changes, and strategic developments
 from OpenAI/ChatGPT, Google/DeepMind/Gemini, Anthropic/Claude, Meta/Llama,
 xAI/Grok, Microsoft/Copilot, NVIDIA, DeepSeek, and other significant AI players.
+Leadership changes, earnings that reveal major AI business shifts, export controls,
+and infrastructure commitments can be headline news without a new model launch.
+Explain their wider significance without inventing market moves or future effects.
 Secondary: genuinely important agents, developer tools, open-source releases,
 and emerging companies with substantial reach or practical impact.
 Individual papers, incremental research, routine repo releases, niche technical
-changes, tutorials, case studies and marketing rarely belong. Significant research
-may qualify when an official announcement or reputable report shows broad impact.
+changes, tutorials, case studies and marketing rarely belong. Surveys, event
+recaps, executive profiles and minor regional rollouts must not
+displace a major model release, leadership change, or consequential industry news.
+Significant research may qualify when an official announcement or reputable report shows broad impact.
 Never reward a topic just because its feed publishes more frequently. Prefer
 original announcements over duplicate reporting. Reporting sources are secondary
 accounts: retain their attribution and do not turn claims into established facts.
