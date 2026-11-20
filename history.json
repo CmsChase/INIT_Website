@@ -629,6 +629,113 @@
       },
       "message_id": "1572884438310719514",
       "resolved_at": "2026-11-19T08:01:13.179307+00:00"
+    },
+    {
+      "id": "e4abdc14-88d5-4855-b009-a6371c7a6eac",
+      "date": "2026-11-20",
+      "status": "pending",
+      "created_at": "2026-11-20T07:50:12.964327+00:00",
+      "stories": [
+        {
+          "id": "056cf0b58a3dbace68332c5e",
+          "url": "https://blog.google/innovation-and-ai/technology/developers-tools/gemini-api-tool-retrieval",
+          "title": "Introducing Tool Retrieval in the Gemini API",
+          "primary_url": "https://blog.google/innovation-and-ai/technology/developers-tools/gemini-api-tool-retrieval"
+        },
+        {
+          "id": "0191a8cf5007a7e305ee6ecc",
+          "url": "https://blog.google/innovation-and-ai/products/gemini-app/gemini-lower-memory-devices",
+          "title": "The Gemini app is now available on lower-memory Android devices.",
+          "primary_url": "https://blog.google/innovation-and-ai/products/gemini-app/gemini-lower-memory-devices"
+        },
+        {
+          "id": "eefdd1b06d858e276d0ea27f",
+          "url": "https://about.fb.com/news/2026/11/meta-welcomes-loblaw-as-first-canadian-retail-partner-to-muse",
+          "title": "Meta Welcomes Loblaw as First Canadian Retail Partner to Muse",
+          "primary_url": "https://about.fb.com/news/2026/11/meta-welcomes-loblaw-as-first-canadian-retail-partner-to-muse"
+        },
+        {
+          "id": "79428cf43613e4131c16b2f4",
+          "url": "https://blogs.nvidia.com/blog/developers-simulation-frontier-ai-agents",
+          "title": "Into the Omniverse: How Developers Turn Ideas Into Simulations With Frontier AI Agents",
+          "primary_url": "https://blogs.nvidia.com/blog/developers-simulation-frontier-ai-agents"
+        }
+      ],
+      "payload_sha256": "175495bdba7076f05b328fbb2bdf3623c09dab1d0c33cb00a13e1866d08dd721",
+      "payload": {
+        "username": "INIT Daily",
+        "content": "**INIT:// DAILY**  /  2026-11-20\n4 signals for people who build.\n-# Source excerpts · AI selection",
+        "embeds": [
+          {
+            "title": "01 / Introducing Tool Retrieval in the Gemini API",
+            "url": "https://blog.google/innovation-and-ai/technology/developers-tools/gemini-api-tool-retrieval",
+            "description": "To turn on Tool Retrieval, add a tool\\_search tool to your request and set defer\\_loading: true on the tools you want to hold back.",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Consider how this could change access, competition, or trust in the AI tools people use and build with.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "Google AI · 2026-11-19"
+            }
+          },
+          {
+            "title": "02 / The Gemini app is now available on lower-memory Android devices.",
+            "url": "https://blog.google/innovation-and-ai/products/gemini-app/gemini-lower-memory-devices",
+            "description": "Access: Now, we’re bringing the Gemini app to eligible Android (Go edition) devices",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Check eligibility and rollout scope before planning to use or recommend this capability.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "Google AI · 2026-11-18"
+            }
+          },
+          {
+            "title": "03 / Meta Welcomes Loblaw as First Canadian Retail Partner to Muse",
+            "url": "https://about.fb.com/news/2026/11/meta-welcomes-loblaw-as-first-canadian-retail-partner-to-muse",
+            "description": "Starting today, shoppers can plan meals, build their basket and check out with participating Loblaw banners, all in Muse.",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Watch how this development could affect competition, distribution, and access to AI for individuals and small teams.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "Meta · 2026-11-18"
+            }
+          },
+          {
+            "title": "04 / Into the Omniverse: How Developers Turn Ideas Into Simulations With Frontier AI Agents",
+            "url": "https://blogs.nvidia.com/blog/developers-simulation-frontier-ai-agents",
+            "description": "Turning a simulation idea into a working application means assembling assets, connecting physics and rendering, and checking that the scene behaves as intended.",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Consider which tasks this could automate and where human oversight would still be needed.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "NVIDIA · 2026-11-19"
+            }
+          }
+        ],
+        "allowed_mentions": {
+          "parse": []
+        },
+        "flags": 4096
+      }
     }
   ]
 }
