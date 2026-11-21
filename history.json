@@ -738,6 +738,113 @@
       },
       "message_id": "1573244063665356887",
       "resolved_at": "2026-11-20T07:50:14.472526+00:00"
+    },
+    {
+      "id": "44a93255-86f5-4365-8701-85819b2c200b",
+      "date": "2026-11-21",
+      "status": "pending",
+      "created_at": "2026-11-21T07:47:03.214475+00:00",
+      "stories": [
+        {
+          "id": "58da586369f33999eb920dc2",
+          "url": "https://openai.com/index/research-acceleration-jagged-frontier",
+          "title": "Research acceleration: The jagged frontier",
+          "primary_url": "https://openai.com/index/research-acceleration-jagged-frontier"
+        },
+        {
+          "id": "585b84b1937546daaf84b13d",
+          "url": "https://about.fb.com/news/2026/11/advancing-science-together-highlights-from-the-open-source-ai-for-science-summit",
+          "title": "Advancing Science Together: Highlights From the Open Source AI For Science Summit",
+          "primary_url": "https://about.fb.com/news/2026/11/advancing-science-together-highlights-from-the-open-source-ai-for-science-summit"
+        },
+        {
+          "id": "7ad44f990f0c53ef2e2a5377",
+          "url": "https://openai.com/index/combatting-adversarial-distillation",
+          "title": "Combatting adversarial distillation",
+          "primary_url": "https://openai.com/index/combatting-adversarial-distillation"
+        },
+        {
+          "id": "c1a2af93db54bfcf7c217cb7",
+          "url": "https://openai.com/index/introducing-medchembench",
+          "title": "Can AI help scientists identify promising drug candidates?",
+          "primary_url": "https://openai.com/index/introducing-medchembench"
+        }
+      ],
+      "payload_sha256": "22347bd7e668afa9f71d97ae2bd2786d645a959465eaf7c18f6220324b53a60a",
+      "payload": {
+        "username": "INIT Daily",
+        "content": "**INIT:// DAILY**  /  2026-11-21\n4 signals for people who build.\n-# Source excerpts · AI selection",
+        "embeds": [
+          {
+            "title": "01 / Research acceleration: The jagged frontier",
+            "url": "https://openai.com/index/research-acceleration-jagged-frontier",
+            "description": "Over the course of this year, AI systems have become increasingly capable, potentially increasing their ability to contribute to AI research and development themselves.",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Consider how this could change access, competition, or trust in the AI tools people use and build with.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "OpenAI · 2026-11-18"
+            }
+          },
+          {
+            "title": "02 / Advancing Science Together: Highlights From the Open Source AI For Science Summit",
+            "url": "https://about.fb.com/news/2026/11/advancing-science-together-highlights-from-the-open-source-ai-for-science-summit",
+            "description": "Last month, we brought researchers from universities, hospitals, and industry together for the Open Source AI for Science Summit",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Consider whether this could reduce the time or cost of turning an idea into a working product.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "Meta · 2026-11-20"
+            }
+          },
+          {
+            "title": "03 / Combatting adversarial distillation",
+            "url": "https://openai.com/index/combatting-adversarial-distillation",
+            "description": "How we’re addressing safety risks of distillation and lessons we’ve learned for strengthening safeguards across the industry.",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Consider how this could change access, competition, or trust in the AI tools people use and build with.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "OpenAI · 2026-11-20"
+            }
+          },
+          {
+            "title": "04 / Can AI help scientists identify promising drug candidates?",
+            "url": "https://openai.com/index/introducing-medchembench",
+            "description": "Introducing MedChemBench, a benchmark that tests how well AI models read molecular structures, interpret experimental results, and choose which compounds to test next.",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Consider how this could change access, competition, or trust in the AI tools people use and build with.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "OpenAI · 2026-11-20"
+            }
+          }
+        ],
+        "allowed_mentions": {
+          "parse": []
+        },
+        "flags": 4096
+      }
     }
   ]
 }
