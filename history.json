@@ -847,6 +847,47 @@
       },
       "message_id": "1573605655003144281",
       "resolved_at": "2026-11-21T07:47:04.617717+00:00"
+    },
+    {
+      "id": "9f85a18e-58b0-4327-9e95-a68b77d8037e",
+      "date": "2026-11-22",
+      "status": "pending",
+      "created_at": "2026-11-22T07:33:24.787873+00:00",
+      "stories": [
+        {
+          "id": "63610b904de29506452ac1fb",
+          "url": "https://blog.google/innovation-and-ai/technology/ai/dialogues-walter-isaacson",
+          "title": "Walter Isaacson on curiosity and creativity in the AI age.",
+          "primary_url": "https://blog.google/innovation-and-ai/technology/ai/dialogues-walter-isaacson"
+        }
+      ],
+      "payload_sha256": "46710e351ef4bec67913fcc8163e553aa3f4747337fe07a425a79e80cf7b951b",
+      "payload": {
+        "username": "INIT Daily",
+        "content": "**INIT:// DAILY**  /  2026-11-22\n1 signal for people who build.\n-# Source excerpts · AI selection",
+        "embeds": [
+          {
+            "title": "01 / Walter Isaacson on curiosity and creativity in the AI age.",
+            "url": "https://blog.google/innovation-and-ai/technology/ai/dialogues-walter-isaacson",
+            "description": "What do Leonardo da Vinci, Benjamin Franklin, and Ada Lovelace have to teach us about creativity in the age of AI?",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Consider how this could change access, competition, or trust in the AI tools people use and build with.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "Google AI · 2026-11-19"
+            }
+          }
+        ],
+        "allowed_mentions": {
+          "parse": []
+        },
+        "flags": 4096
+      }
     }
   ]
 }
