@@ -851,7 +851,7 @@
     {
       "id": "9f85a18e-58b0-4327-9e95-a68b77d8037e",
       "date": "2026-11-22",
-      "status": "sent",
+      "status": "pending",
       "created_at": "2026-11-22T07:33:24.787873+00:00",
       "stories": [
         {
@@ -859,22 +859,72 @@
           "url": "https://blog.google/innovation-and-ai/technology/ai/dialogues-walter-isaacson",
           "title": "Walter Isaacson on curiosity and creativity in the AI age.",
           "primary_url": "https://blog.google/innovation-and-ai/technology/ai/dialogues-walter-isaacson"
+        },
+        {
+          "id": "fd109fdc361c3cd3d5827b79",
+          "title": "Anthropic announces closing of initial public offering, including full exercise of underwriters’ option to purchase additional shares, and closing of concurrent private placement",
+          "url": "https://www.anthropic.com/news/ipo-close",
+          "primary_url": "https://www.anthropic.com/news/ipo-close"
+        },
+        {
+          "id": "dc88cc571d8c777142e5aa86",
+          "title": "Genie 4 is now available on the Gemini API.",
+          "url": "https://blog.google/innovation-and-ai/technology/developers-tools/genie-4-in-gemini-api",
+          "primary_url": "https://blog.google/innovation-and-ai/technology/developers-tools/genie-4-in-gemini-api"
+        },
+        {
+          "id": "efdbd6c83627cffee94dfe19",
+          "title": "Let Gemini tackle repetitive chores on your Mac",
+          "url": "https://blog.google/innovation-and-ai/products/gemini-app/computer-use-mac",
+          "primary_url": "https://blog.google/innovation-and-ai/products/gemini-app/computer-use-mac"
         }
       ],
-      "payload_sha256": "46710e351ef4bec67913fcc8163e553aa3f4747337fe07a425a79e80cf7b951b",
+      "payload_sha256": "e5bc9d1fed287c22b774dde085fbd4f3f7407185739cfdc6d6daa6df78db3fa0",
       "payload": {
         "username": "INIT Daily",
-        "content": "**INIT:// DAILY**  /  2026-11-22\n1 signal for people who build.\n-# Source excerpts · AI selection",
+        "content": "**INIT:// DAILY**  /  2026-11-22\n3 signals for people who build.\n-# Source excerpts · AI selection",
         "embeds": [
           {
-            "title": "01 / Walter Isaacson on curiosity and creativity in the AI age.",
-            "url": "https://blog.google/innovation-and-ai/technology/ai/dialogues-walter-isaacson",
-            "description": "What do Leonardo da Vinci, Benjamin Franklin, and Ada Lovelace have to teach us about creativity in the age of AI?",
+            "title": "01 / Anthropic announces closing of initial public offering, including full exercise of underwriters’ option to purchase additional shares, and closing of concurrent private placement",
+            "url": "https://www.anthropic.com/news/ipo-close",
+            "description": "The offering consisted of 1,103,351,354 shares sold by Anthropic and 23,648,646 shares sold by certain selling stockholders.",
             "color": 12120939,
             "fields": [
               {
                 "name": "Why it matters · editorial",
-                "value": "Consider how this could change access, competition, or trust in the AI tools people use and build with.",
+                "value": "Watch how new capital and public-market scrutiny could affect the company's AI investment, roadmap, and commercial commitments.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "Anthropic · 2026-11-20"
+            }
+          },
+          {
+            "title": "02 / Genie 4 is now available on the Gemini API.",
+            "url": "https://blog.google/innovation-and-ai/technology/developers-tools/genie-4-in-gemini-api",
+            "description": "Using real-time keyboard controls alongside live text prompts, you can navigate environments and change weather, lighting, objects, or events on the fly.",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Compare how access, pricing, and capabilities could change what individuals and small teams can build.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "Google AI · 2026-11-19"
+            }
+          },
+          {
+            "title": "03 / Let Gemini tackle repetitive chores on your Mac",
+            "url": "https://blog.google/innovation-and-ai/products/gemini-app/computer-use-mac",
+            "description": "Access: rolling out in English in the U.S. … Available for personal Google accounts 18+, available to Google AI Plus, Pro and Ultra users.",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Check eligibility and rollout scope before planning to use or recommend this capability.",
                 "inline": false
               }
             ],
@@ -889,7 +939,55 @@
         "flags": 4096
       },
       "message_id": "1573964610556657746",
-      "resolved_at": "2026-11-22T07:33:26.288231+00:00"
+      "resolved_at": "2026-11-22T07:33:26.288231+00:00",
+      "revisions": [
+        {
+          "payload": {
+            "username": "INIT Daily",
+            "content": "**INIT:// DAILY**  /  2026-11-22\n1 signal for people who build.\n-# Source excerpts · AI selection",
+            "embeds": [
+              {
+                "title": "01 / Walter Isaacson on curiosity and creativity in the AI age.",
+                "url": "https://blog.google/innovation-and-ai/technology/ai/dialogues-walter-isaacson",
+                "description": "What do Leonardo da Vinci, Benjamin Franklin, and Ada Lovelace have to teach us about creativity in the age of AI?",
+                "color": 12120939,
+                "fields": [
+                  {
+                    "name": "Why it matters · editorial",
+                    "value": "Consider how this could change access, competition, or trust in the AI tools people use and build with.",
+                    "inline": false
+                  }
+                ],
+                "footer": {
+                  "text": "Google AI · 2026-11-19"
+                }
+              }
+            ],
+            "allowed_mentions": {
+              "parse": []
+            },
+            "flags": 4096
+          },
+          "payload_sha256": "46710e351ef4bec67913fcc8163e553aa3f4747337fe07a425a79e80cf7b951b",
+          "stories": [
+            {
+              "id": "63610b904de29506452ac1fb",
+              "url": "https://blog.google/innovation-and-ai/technology/ai/dialogues-walter-isaacson",
+              "title": "Walter Isaacson on curiosity and creativity in the AI age.",
+              "primary_url": "https://blog.google/innovation-and-ai/technology/ai/dialogues-walter-isaacson"
+            }
+          ],
+          "replaced_at": "2026-11-22T13:17:18.814568+00:00"
+        }
+      ],
+      "correction": {
+        "status": "pending",
+        "date": "2026-11-22",
+        "message_id": "1573964610556657746",
+        "stories": 3,
+        "source_run_id": "45003254826",
+        "source_commit": "d3b2ad2c7116ccbf6a130487e598d14e75d2ecd1"
+      }
     }
   ]
 }
