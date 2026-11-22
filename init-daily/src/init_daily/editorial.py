@@ -23,10 +23,13 @@ COMPANIES = {
     "alibaba": r"\b(alibaba|qwen)\b",
 }
 AI = r"\b(ai|artificial intelligence|model(?:s)?|llm(?:s)?|chatgpt|claude|gemini|grok|deepseek|copilot|agent(?:s|ic)?|robot(?:s|ics|ic)?|inference|generative|gpu|llama|qwen)\b"
-LAUNCH = r"\b(introduc(?:ing|es)|launch(?:es|ed)?|unveil(?:s|ed)?|releas(?:e|es|ed)|roll(?:s|ing)? out|new features?|new capabilities|new (?:flagship |frontier )?model|now available|upgrade(?:s)?|expand(?:s|ed)?|adds?|bring(?:s|ing)?|debuts?)\b"
+LAUNCH = r"\b(introduc(?:ing|es)|launch(?:es|ed)?|unveil(?:s|ed)?|releas(?:e|es|ed)|roll(?:s|ing)? out|new features?|new capabilities|new (?:flagship |frontier )?model|now available|can now|gains?|gives? .{0,60}\bability|upgrade(?:s)?|expand(?:s|ed)?|adds?|bring(?:s|ing)?|debuts?)\b"
 STRATEGY = r"\b(partnership|partner(?:s|ing|ed)? (?:with|to)|acquir(?:e[sd]?|ing)|acquisition|merger|strategic|agreement|integration|integrat(?:e[sd]?|ing)|investment|ipo|public offering)\b"
 SECURITY = r"\b(security|breach|leaks?|leaked|regulation|oversight|safety law|ai act|ban(?:ned)?)\b"
-CORPORATE = r"\b(ceo|chief executive|leadership transition|resign(?:s|ed|ation)?|steps? down|exit|departure|financial results|earnings|export control|supply chain (?:partners|commitments)|national security)\b"
+CORPORATE = r"\b(leadership transition|resign(?:s|ed|ation)?|steps? down|exit|departure|financial results|earnings|export control|supply chain (?:partners|commitments)|national security|ipo|initial public offering|funding round)\b"
+LEADERSHIP_ROLE = r"\b(?:ceo|chief executive)\b"
+LEADERSHIP_CHANGE = r"\b(?:transition|appoint(?:s|ed)?|nam(?:es|ed)|replac(?:e[sd]?|ing)|oust(?:s|ed)?|fir(?:es|ed)|retir(?:es|ed|ement)|quits?|succeeds?)\b|\bnew (?:ceo|chief executive)\b"
+PROFILE = r"\b(?:podcast episode|interview|dialogues|conversation with|opening bell|highlights from|event recap|summit recap|curiosity and creativity)\b"
 # These companies' leadership and business decisions directly affect the AI
 # industry even when a corporate headline does not contain the letters 'AI'.
 AI_CORE_COMPANIES = {"openai", "anthropic", "nvidia", "deepseek", "xai"}
@@ -56,7 +59,9 @@ def assess(article: Article, now: datetime) -> Assessment:
     names = companies(article)
     signals = []
     category = article.category or "industry"
-    corporate = bool(set(names) & AI_CORE_COMPANIES and re.search(CORPORATE, title))
+    corporate = bool(set(names) & AI_CORE_COMPANIES and (
+        re.search(CORPORATE, title) or
+        (re.search(LEADERSHIP_ROLE, title) and re.search(LEADERSHIP_CHANGE, title))))
     # Standalone preprints need independent editorial confirmation: significant
     # research can still enter via a company's announcement or reputable reporting.
     if is_research(article) or article.source_tier == "research":
@@ -66,7 +71,12 @@ def assess(article: Article, now: datetime) -> Assessment:
     strategy = bool(re.search(STRATEGY, title))
     if not article.ai_focused_source and not (re.search(AI, title) or strategy or corporate):
         return Assessment(0, category, names, ("not_ai_headline",))
-    launch = bool(re.search(LAUNCH, title))
+    # Official teasers sometimes state the announcement more clearly than an
+    # editorial headline (e.g. "Let Gemini tackle chores on your Mac"). Never
+    # infer a release from an incidental mention deep in an article.
+    launch = bool(re.search(LAUNCH, title) or (article.source_tier == "official" and
+                  re.search(r"\b(?:we(?:['’]re| are)? introducing|we(?:['’]re| are)? launching|we introduce|today we(?:['’]re| are)? releasing|(?:gemini|chatgpt|claude|copilot|grok) can now|(?:gemini|chatgpt|claude|copilot|grok)[^.!?]{0,45} now (?:has|supports|automates|handles))\b",
+                            article.excerpt[:500], re.I)))
     security = bool(re.search(SECURITY, title))
     amount = 2.0 + article.weight
     amount += {"official": 1.7, "reporting": .6, "ecosystem": .2, "releases": -2.0}.get(article.source_tier, 0)
@@ -103,13 +113,21 @@ def assess(article: Article, now: datetime) -> Assessment:
         category = "robotics"
     elif re.search(r"\b(api|sdk|coding|developer|open.source)\b", title):
         category = "tools"
-    if names and re.search(r"\b(breakthrough|frontier|open.source|open.weight|infrastructure|accelerator|chip)\b", title):
+    if names and re.search(r"\b(breakthrough|open.source|open.weight|infrastructure|accelerator|chip)\b", title):
         amount += 1.5
         signals.append("broad_capability_or_infrastructure")
+    if names and not any(s != "major_company" for s in signals):
+        amount -= 4
+        signals.append("no_concrete_development")
+    if re.search(PROFILE, title) or "/dialogues-" in article.url:
+        amount = min(0, amount - 7)
+        signals.append("interview_or_event_filler")
     if (re.search(LOW_VALUE, title) or re.search(r"\b(uses? .* to|customer story|case study)\b", title)
             or "/customer-stories/" in article.url):
         amount -= 7
         signals.append("tutorial_or_promotion")
+        if re.search(r"\b(?:roadshow|webinar|register now|customer stor(?:y|ies))\b", title) or "/customer-stories/" in article.url:
+            amount = min(0, amount)
     if re.search(SPECULATION, title):
         amount -= 7
         signals.append("speculation_or_opinion")

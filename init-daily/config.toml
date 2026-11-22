@@ -70,6 +70,26 @@ weight = 1.3
 excerpt_adapter = "google_description"
 
 [[sources]]
+id = "google-gemini-app"
+name = "Google AI"
+url = "https://blog.google/innovation-and-ai/products/gemini-app/rss/"
+allowed_hosts = ["blog.google"]
+tier = "official"
+company = "google"
+weight = 1.3
+excerpt_adapter = "google_description"
+
+[[sources]]
+id = "google-developers"
+name = "Google AI"
+url = "https://blog.google/innovation-and-ai/technology/developers-tools/rss/"
+allowed_hosts = ["blog.google"]
+tier = "official"
+company = "google"
+weight = 1.3
+excerpt_adapter = "google_description"
+
+[[sources]]
 id = "anthropic"
 name = "Anthropic"
 url = "https://www.anthropic.com/news"

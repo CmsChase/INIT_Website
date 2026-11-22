@@ -30,6 +30,8 @@ Individual papers, incremental research, routine repo releases, niche technical
 changes, tutorials, case studies and marketing rarely belong. Surveys, event
 recaps, executive profiles and minor regional rollouts must not
 displace a major model release, leadership change, or consequential industry news.
+An interview, podcast, philosophical question or event appearance is not a
+concrete industry development, even when published by a major AI company.
 Significant research may qualify when an official announcement or reputable report shows broad impact.
 Never reward a topic just because its feed publishes more frequently. Prefer
 original announcements over duplicate reporting. Reporting sources are secondary

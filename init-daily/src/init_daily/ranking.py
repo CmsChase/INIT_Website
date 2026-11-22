@@ -3,7 +3,7 @@ from datetime import datetime
 import re
 
 from .config import Settings
-from .editorial import assess, companies
+from .editorial import assess, candidate_record, companies
 from .models import Article, Story, canonical_url, is_research, same_story
 
 RELEVANCE = {
@@ -24,17 +24,26 @@ def score(article: Article, now: datetime) -> tuple[float, str]:
 
 
 def shortlist(articles: list[Article], previous: list[dict], settings: Settings,
-              now: datetime) -> list[Article]:
+              now: datetime, *, audit: dict | None = None) -> list[Article]:
+    records = []
+
+    def record(article, decision):
+        if audit is not None:
+            records.append({**candidate_record(article, now), "decision": decision})
+
     # Compare equally important duplicates with the original announcement first.
     ranked = sorted(articles, key=lambda a: (a.source_tier != "official", -score(a, now)[0], a.url))
     unique = []
     for article in ranked:
         if score(article, now)[0] < settings.min_score:
+            record(article, "below_threshold")
             continue
         if any(article.id == p["id"] or canonical_url(article.url) == p.get("primary_url")
                or same_story(article.title, p["title"]) for p in previous):
+            record(article, "already_published")
             continue
         if any(article.id == a.id or same_story(article.title, a.title) for a in unique):
+            record(article, "duplicate_in_run")
             continue
         unique.append(article)
     ranked = sorted(unique, key=lambda a: (-score(a, now)[0], a.source_tier != "official", a.url))
@@ -43,11 +52,16 @@ def shortlist(articles: list[Article], previous: list[dict], settings: Settings,
     source_cap = max(settings.max_per_source, 4)
     for article in ranked:
         if counts[article.source_id] >= source_cap:
+            record(article, "source_cap")
+            continue
+        if len(result) >= settings.candidate_limit:
+            record(article, "candidate_limit")
             continue
         result.append(article)
+        record(article, "shortlisted")
         counts[article.source_id] += 1
-        if len(result) >= settings.candidate_limit:
-            break
+    if audit is not None:
+        audit.update(counts=dict(Counter(r["decision"] for r in records)), articles=records)
     return result
 
 

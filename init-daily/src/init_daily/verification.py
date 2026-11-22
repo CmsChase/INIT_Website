@@ -30,7 +30,7 @@ PRIMARY_HOSTS = {
 }
 PRICE = re.compile(r"[$€£]|\b(?:price|pricing|priced|introductory rate|per million tokens)\b", re.I)
 ACCESS = re.compile(r"\b(?:available|availability|access|roll out|rolling out|rollout|bringing|paid tier|preview|try|general public|everyone)\b", re.I)
-RESTRICT = re.compile(r"\b(?:paid|paying|subscribers?|subscription|eligible|eligibility|only|waitlist|private preview|Frontier customers|customers in Frontier|apply for access|verification programs?|subject to)\b", re.I)
+RESTRICT = re.compile(r"\b(?:paid|paying|subscribers?|subscription|eligible|eligibility|only|waitlist|private preview|Frontier customers|customers in Frontier|apply for access|verification programs?|subject to|personal Google accounts|Google AI (?:Plus|Pro|Ultra))\b", re.I)
 QUANTITY = re.compile(r"\b(?:\d+(?:\.\d+)?|one|two|three|four|five|six|seven|eight|nine|ten)\s+(?:(?:million|billion|thousand)\s+)?(?:lines|users|tokens|hours|days|percent)\b|\d+(?:\.\d+)?%", re.I)
 STOP = {"a", "an", "the", "to", "in", "of", "for", "and", "is", "with", "new", "now", "our", "introducing", "releases", "release", "available", "google", "openai", "anthropic"}
 TOPIC_STOP = STOP | {"ai", "model", "models", "says", "can", "which", "its", "access", "expands", "help", "from", "update", "updates"}
@@ -121,6 +121,13 @@ def article_body(raw: bytes) -> tuple[str, list[str], list[str]]:
             if not isinstance(child, str):
                 walk(child)
     walk(root)
+    # Access/device conditions can live in article-linked footnotes outside the
+    # body component. Read only explicitly referenced local footnote IDs.
+    footnotes = {u[1:] for u in links if re.fullmatch(r"#(?:footnote|fn)[-_][\w-]+", u)}
+    body_nodes = {id(n) for n in root.walk()}
+    for node in nodes:
+        if node.attrs.get("id") in footnotes and id(node) not in body_nodes:
+            walk(node)
     if not blocks:
         raise VerificationError("article_body_empty")
     return headings[0], list(dict.fromkeys(blocks)), list(dict.fromkeys(links))
@@ -228,6 +235,12 @@ def _access_quotes(blocks: list[str]) -> list[str]:
                 quote = _short_quote(sentence)
                 if quote and ACCESS.search(quote) and RESTRICT.search(quote) and not PRICE.search(sentence):
                     # Complete eligibility scope, not an unqualified public lead.
+                    regional = [m.group() for b in blocks for m in re.finditer(
+                        r"\b(?:rolling out|available) in (?:English|[A-Z][a-z]+)(?: in (?:the )?(?:U\.S\.|U\.K\.|[A-Z][a-z]+(?: [A-Z][a-z]+)?))?", b)]
+                    if regional and regional[0] not in quote:
+                        if len((regional[0] + " " + quote).split()) > 25:
+                            raise VerificationError("access_scope_exceeds_excerpt_budget")
+                        return [regional[0], quote]
                     return [quote]
             continue
         quotes = [match.group().strip().rstrip(",")]
@@ -266,7 +279,7 @@ def current_excerpt(story: Story, blocks: list[str]) -> tuple[str, list[str], di
             if ((PRICE.search(sentence) and not financial_metric) or ACCESS.search(sentence) or RESTRICT.search(sentence)):
                 continue
             quote = _short_quote(sentence)
-            if not quote or len(quote.split()) < 8 or PROMOTIONAL.search(quote):
+            if not quote or "?" in quote or len(quote.split()) < 8 or PROMOTIONAL.search(quote):
                 continue
             overlap = len(topic & _words(quote))
             capability = bool(CAPABILITY.search(quote))
@@ -318,6 +331,10 @@ def verify_selected(stories: list[Story], settings: Settings, client: httpx.Clie
         if primary_publisher and source:
             hosts = tuple(dict.fromkeys((*hosts, *source.allowed_hosts)))
         try:
+            # Replacements must meet the same impact threshold as the shortlist;
+            # a readable first-party interview is not a substitute for news.
+            if assess(article, now).score < settings.min_score:
+                raise VerificationError("editorial_below_threshold")
             if primary_publisher:
                 primary_urls = [article.url]
             else:
@@ -365,7 +382,9 @@ def verify_selected(stories: list[Story], settings: Settings, client: httpx.Clie
             elif details.get("access_conditions_retained") and re.search(r"\bautonomous agent\b", " ".join(blocks[:10]), re.I):
                 why = "Consider which workflows an autonomous agent could handle, what approvals it needs, and whether your team is eligible."
             if "major_corporate_development" in assess(article, now).signals:
-                if re.search(r"\b(?:financial results|earnings)\b", title, re.I):
+                if re.search(r"\b(?:ipo|initial public offering|funding round)\b", title, re.I):
+                    why = "Watch how new capital and public-market scrutiny could affect the company's AI investment, roadmap, and commercial commitments."
+                elif re.search(r"\b(?:financial results|earnings)\b", title, re.I):
                     why = "Watch whether the results change expectations for AI infrastructure demand and the company's ability to sustain its roadmap."
                 elif re.search(r"\b(?:ceo|chief executive|resign|exit|departure)\b", title, re.I):
                     why = "A leadership transition could affect roadmap confidence and developer support; watch for changes to the company's commitments."
