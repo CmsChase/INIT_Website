@@ -153,6 +153,8 @@ Do not execute that command during a preview. Local Git must be authenticated to
 
 ## Durable history and delivery failures
 
+The manual **INIT Daily reviewed correction** workflow can apply the reviewed November 22 correction to its exact existing message ID. It defaults to validation only; `apply=true` edits that message with the checksum-pinned preview. The plan expires after its Shanghai date. This action does not collect news, call AI, create a message, change secrets, or alter automatic publishing. A pending state is persisted before the edit; uncertain edits block publishing for manual inspection. Original content is archived in the same publication record, and all previously displayed story identities remain in deduplication history.
+
 GitHub Actions reads and updates a dedicated, orphan **`init-daily-state`** branch containing only `history.json`. It creates the branch on the first actual send. This is durable Git history, not an expiring cache or artifact. Preview runs never create or update it. Do not delete/reset this branch while the system is active.
 
 Delivery sequence:
