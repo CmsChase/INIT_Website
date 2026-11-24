@@ -989,6 +989,91 @@
         "source_commit": "d3b2ad2c7116ccbf6a130487e598d14e75d2ecd1",
         "edited_at": "2026-11-22T13:17:20.323967+00:00"
       }
+    },
+    {
+      "id": "38cdca7d-571e-49f7-9ebd-f62fd8a033fb",
+      "date": "2026-11-24",
+      "status": "pending",
+      "created_at": "2026-11-24T09:43:12.571541+00:00",
+      "stories": [
+        {
+          "id": "5e2478fb7557e8d39a7db8c4",
+          "url": "https://techcrunch.com/2026/11/23/anthropic-launches-claude-ship-letting-ai-agents-review-fix-and-approve-code-changes",
+          "title": "Introducing Claude Ship",
+          "primary_url": "https://claude.com/resources/articles/introducing-claude-ship"
+        },
+        {
+          "id": "4f5fe20de68e9dfdec37bc31",
+          "url": "https://blog.google/products-and-platforms/products/search/google-search-personal-intelligence-apps",
+          "title": "A more tailored Google Search that’s uniquely yours",
+          "primary_url": "https://blog.google/products-and-platforms/products/search/google-search-personal-intelligence-apps"
+        },
+        {
+          "id": "04ec58c5601563db1c2040dc",
+          "url": "https://blog.google/innovation-and-ai/technology/developers-tools/file-slicing-controls",
+          "title": "Introducing file slicing controls in the Gemini API",
+          "primary_url": "https://blog.google/innovation-and-ai/technology/developers-tools/file-slicing-controls"
+        }
+      ],
+      "payload_sha256": "e48b540d2bb6a4f855261f6a3eaced6d188d023bdc24e84eba50cc7b9745523b",
+      "payload": {
+        "username": "INIT Daily",
+        "content": "**INIT:// DAILY**  /  2026-11-24\n3 signals for people who build.\n-# Source excerpts · AI selection",
+        "embeds": [
+          {
+            "title": "01 / Introducing Claude Ship",
+            "url": "https://claude.com/resources/articles/introducing-claude-ship",
+            "description": "Access: Claude Ship is available on Claude Team and Enterprise plans for repositories on GitHub. … PR Steward and Claude Approvals are in beta",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Consider where automated code review could save time; check plan eligibility, beta limits, and approval policies before enabling it.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "claude.com · 2026-11-23"
+            }
+          },
+          {
+            "title": "02 / A more tailored Google Search that’s uniquely yours",
+            "url": "https://blog.google/products-and-platforms/products/search/google-search-personal-intelligence-apps",
+            "description": "If you choose to connect your Wallet, AI Mode can only read information from your accounts; it can’t move, manage, or invest your money.",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Watch how this development could affect competition, distribution, and access to AI for individuals and small teams.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "Google AI · 2026-11-23"
+            }
+          },
+          {
+            "title": "03 / Introducing file slicing controls in the Gemini API",
+            "url": "https://blog.google/innovation-and-ai/technology/developers-tools/file-slicing-controls",
+            "description": "This keeps context focused on the relevant parts of a file while billing tokens only for the parts Gemini inspects.",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Consider whether this could reduce the time or cost of turning an idea into a working product.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "Google AI · 2026-11-23"
+            }
+          }
+        ],
+        "allowed_mentions": {
+          "parse": []
+        },
+        "flags": 4096
+      }
     }
   ]
 }
