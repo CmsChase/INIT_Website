@@ -127,6 +127,10 @@ To stop posting, set `INIT_DAILY_PUBLISH_ENABLED=false` in repository Variables.
 
 ### Independent daily trigger
 
+The Worker uses `redirect: "manual"` and rejects non-success status codes. Cloudflare's runtime rejects `redirect: "error"` before sending a request; Node fetch mocks alone do not verify this runtime behavior. Confirm deployment with an actual Cloudflare-to-GitHub preview dispatch. Transport logs expose only a local error category, never the credential or provider response body.
+
+For a safe scheduled probe while live publishing is enabled, set `PROBE_TRIGGER_AT` to one full UTC timestamp and add a matching temporary cron at least 15 minutes ahead to allow Cloudflare propagation. Only that exact scheduled instant may dispatch, and it always sets `dry_run=true`. Remove the temporary cron and variable after checking the GitHub preview. The normal daily cron remains independent of the probe.
+
 `scheduler/` contains an optional Cloudflare Worker that dispatches INIT Daily at **09:05 Asia/Shanghai**, giving GitHub time to prepare before the **09:15** delivery target. The Worker sends `scheduled_delivery=true` to use the same hold time as GitHub's scheduled runs. The existing GitHub schedules remain as backups. All delivery paths share the concurrency group and durable history, so a late backup cannot post a second briefing for the same date.
 
 Create a [fine-grained GitHub token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token) for `CmsChase/INIT_Website` with **Actions: Read and write**. Deploy the Worker from `init-daily/scheduler/` and add the token at the private secret prompt:
@@ -229,6 +233,8 @@ This V1 deliberately uses extractive summaries rather than unrestricted paraphra
 The Google app and developer-tool feeds supplement its AI/model feeds, which do not contain every product launch. Core AI companies' IPOs and funding rounds qualify without an AI keyword. A CEO appearance alone is not a leadership transition, and a company byline alone does not qualify an interview or commentary. Replacement stories must pass the impact threshold too; rhetorical questions cannot become factual summaries.
 
 ### Current primary-body checks for selected stories
+
+Google Search's official feed covers AI Mode product changes absent from Google's AI/model feeds. Official metadata replaces image captions before ranking. Research application profiles, retrospective IPO profiles, and minor regional rollouts receive lower priority. Source extraction skips narrative introductions and empty list headings, retains complete qualified statements, and reads all text sections in a Claude article, including later plan and beta conditions.
 
 The mainstream ranking stage still uses lightweight feeds. The final selected stories undergo a separate, deterministic check **after ranking and before preview or publication**. This closes two gaps found on 2026-11-11: DeepMind's RSS/meta teaser retained an older proof-line count, and a reporting lead omitted Gemini's paid-tier/subscriber restrictions. Exact copying from those snippets did not establish that a claim was current or complete.
 

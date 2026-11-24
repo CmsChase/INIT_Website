@@ -68,7 +68,12 @@ def assess(article: Article, now: datetime) -> Assessment:
         return Assessment(0, "research", names, ("standalone_research",))
     if not re.search(AI, text) and not article.category and not corporate:
         return Assessment(0, category, names, ("not_ai_news",))
-    strategy = bool(re.search(STRATEGY, title))
+    # An official teaser can establish a concrete AI-app integration even when
+    # its editorial headline omits "AI" or "launch". The final body is checked.
+    integration = bool(article.source_tier == "official" and re.search(AI, text)
+                       and re.search(r"\b(?:connect|integrat)\w*\b", article.excerpt[:500], re.I)
+                       and len(set(re.findall(r"\b(?:Wallet|Drive|Gmail|Calendar|Photos)\b", article.excerpt[:500]))) >= 2)
+    strategy = bool(re.search(STRATEGY, title) or integration)
     if not article.ai_focused_source and not (re.search(AI, title) or strategy or corporate):
         return Assessment(0, category, names, ("not_ai_headline",))
     # Official teasers sometimes state the announcement more clearly than an
@@ -113,6 +118,8 @@ def assess(article: Article, now: datetime) -> Assessment:
         category = "robotics"
     elif re.search(r"\b(api|sdk|coding|developer|open.source)\b", title):
         category = "tools"
+    if category == "industry" and re.search(r"\b(api|sdk|coding|code review|pull requests?)\b", title):
+        category = "tools"
     if names and re.search(r"\b(breakthrough|open.source|open.weight|infrastructure|accelerator|chip)\b", title):
         amount += 1.5
         signals.append("broad_capability_or_infrastructure")
@@ -143,6 +150,16 @@ def assess(article: Article, now: datetime) -> Assessment:
     if re.search(r"\b(survey(?:ed)?|survey says|ai day|brings? together|meetup|community event)\b", title):
         amount -= 7
         signals.append("survey_event_or_profile")
+    if re.search(r"\b(?:researchers?|customers?|companies|teams) (?:are )?using .+ (?:to|for)\b", title):
+        amount -= 7
+        signals.append("application_case_study")
+    if (launch and not (corporate or strategy or security or "model_launch" in signals)
+            and re.search(r"\b(?:in|to) (?:the )?(?:uk|united kingdom|australia|canada|india|japan|brazil|germany|france|singapore|korea)\b", title)):
+        amount -= 7
+        signals.append("regional_rollout")
+    if re.search(r"^(?:how|inside)\b.+\bbefore (?:its |the )?ipo\b", title):
+        amount -= 14
+        signals.append("retrospective_profile")
     if re.search(r"^(?:how|inside|meet|a day in)\b", title) and not (launch or strategy or corporate or security):
         amount -= 5
         signals.append("explainer_or_profile")

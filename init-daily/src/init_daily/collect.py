@@ -131,7 +131,7 @@ def enrich_missing(client: httpx.Client, items: list[Article], source: Source,
     result, attempts = [], 0
     for article in items:
         caption = source.excerpt_adapter == "google_description" and bool(re.search(
-            r"^(?:(?:a|an|the) (?:man|woman|person|phone|illustration|image|photo|graphic|screenshot|collage|logo)|Prompting (?:Gemini|ChatGPT|Claude) to)\b",
+            r"^(?:(?:a|an|the) (?:man|woman|person|phone|illustration|image|photo|graphic|screenshot|collage|logo)|Prompting (?:Gemini|ChatGPT|Claude) to)\b|\b(?:bar|screen|logo|illustration|image|graphic|screenshot) (?:with|showing|of)\b|\bsurrounded by\b",
             article.excerpt, re.I))
         if len(article.excerpt) >= 50 and not caption:
             result.append(article)

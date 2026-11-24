@@ -90,6 +90,16 @@ weight = 1.3
 excerpt_adapter = "google_description"
 
 [[sources]]
+id = "google-search"
+name = "Google Search"
+url = "https://blog.google/products-and-platforms/products/search/rss/"
+allowed_hosts = ["blog.google"]
+tier = "official"
+company = "google"
+weight = 1.3
+excerpt_adapter = "google_description"
+
+[[sources]]
 id = "anthropic"
 name = "Anthropic"
 url = "https://www.anthropic.com/news"

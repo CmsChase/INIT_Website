@@ -30,12 +30,12 @@ PRIMARY_HOSTS = {
 }
 PRICE = re.compile(r"[$€£]|\b(?:price|pricing|priced|introductory rate|per million tokens)\b", re.I)
 ACCESS = re.compile(r"\b(?:available|availability|access|roll out|rolling out|rollout|bringing|paid tier|preview|try|general public|everyone)\b", re.I)
-RESTRICT = re.compile(r"\b(?:paid|paying|subscribers?|subscription|eligible|eligibility|only|waitlist|private preview|Frontier customers|customers in Frontier|apply for access|verification programs?|subject to|personal Google accounts|Google AI (?:Plus|Pro|Ultra))\b", re.I)
+RESTRICT = re.compile(r"\b(?:paid|paying|subscribers?|subscription|eligible|eligibility|only|waitlist|private preview|Frontier customers|customers in Frontier|apply for access|verification programs?|subject to|personal Google accounts|Google AI (?:Plus|Pro|Ultra)|(?:Team|Enterprise|Pro|Plus|Ultra) plans?)\b", re.I)
 QUANTITY = re.compile(r"\b(?:\d+(?:\.\d+)?|one|two|three|four|five|six|seven|eight|nine|ten)\s+(?:(?:million|billion|thousand)\s+)?(?:lines|users|tokens|hours|days|percent)\b|\d+(?:\.\d+)?%", re.I)
 STOP = {"a", "an", "the", "to", "in", "of", "for", "and", "is", "with", "new", "now", "our", "introducing", "releases", "release", "available", "google", "openai", "anthropic"}
 TOPIC_STOP = STOP | {"ai", "model", "models", "says", "can", "which", "its", "access", "expands", "help", "from", "update", "updates"}
 OPENAI_CHANGELOG = "https://developers.openai.com/api/docs/changelog.md"
-PROMOTIONAL = re.compile(r"\b(?:our vision|becoming real|exceptional technology leader|world leader|more powerful without)\b", re.I)
+PROMOTIONAL = re.compile(r"\b(?:our vision|becoming real|exceptional technology leader|world leader|more powerful without|most helpful (?:search )?experience|richness of the world)\b", re.I)
 CAPABILITY = re.compile(r"\b(?:can|enables?|allows?|supports?|selects?|routes?|integrates?|introduces?|adds?|connects?|manages?)\b", re.I)
 
 
@@ -91,6 +91,11 @@ def article_body(raw: bytes) -> tuple[str, list[str], list[str]]:
                 or n.attrs.get("data-component") == "uni-article-body"
                 or n.attrs.get("itemprop") == "articleBody"
                 or "article-body" in (n.attrs.get("class") or "").split()]
+    richtext = [n for n in nodes if "text-rich-text--article" in (n.attrs.get("class") or "").split()]
+    # Claude articles split text around screenshots. The enclosing semantic
+    # article retains later availability sections without including related cards.
+    rich_ids = {id(n) for n in richtext}
+    explicit += [n for n in nodes if n.tag == "article" and any(id(c) in rich_ids for c in n.walk())] or richtext
     mains = [n for n in nodes if n.tag == "main"]
     articles = [n for n in nodes if n.tag == "article"]
     choices = explicit or mains or articles
@@ -235,6 +240,11 @@ def _access_quotes(blocks: list[str]) -> list[str]:
                 quote = _short_quote(sentence)
                 if quote and ACCESS.search(quote) and RESTRICT.search(quote) and not PRICE.search(sentence):
                     # Complete eligibility scope, not an unqualified public lead.
+                    beta = re.search(r"\b[A-Z][A-Za-z ]{1,60} (?:is|are) in beta\b", block)
+                    if beta and beta.group() not in quote:
+                        if len((quote + " " + beta.group()).split()) > 25:
+                            raise VerificationError("access_scope_exceeds_excerpt_budget")
+                        return [quote, beta.group()]
                     regional = [m.group() for b in blocks for m in re.finditer(
                         r"\b(?:rolling out|available) in (?:English|[A-Z][a-z]+)(?: in (?:the )?(?:U\.S\.|U\.K\.|[A-Z][a-z]+(?: [A-Z][a-z]+)?))?", b)]
                     if regional and regional[0] not in quote:
@@ -272,14 +282,22 @@ def current_excerpt(story: Story, blocks: list[str]) -> tuple[str, list[str], di
     old_quantity = bool(QUANTITY.search(original))
     financial = bool(re.search(r"\b(?:financial results|earnings)\b", story.article.title, re.I))
     for index, block in enumerate(blocks):
+        if re.search(r"\bknows how this goes\b|^(?:Imagine|Picture this)\b", block, re.I):
+            continue
         sentences = _sentences(block)
         spans = sentences + [" ".join(sentences[i:i + 2]) for i in range(len(sentences) - 1)]
         for sentence in spans:
             financial_metric = financial and bool(re.search(r"\b(?:revenue|earnings|profit|cash flow)\b", sentence, re.I))
-            if ((PRICE.search(sentence) and not financial_metric) or ACCESS.search(sentence) or RESTRICT.search(sentence)):
+            # A complete non-availability statement can retain words such as
+            # "only" (read-only access, billing only inspected pages). Never
+            # shorten away that condition or reinterpret it as release scope.
+            complete = _short_quote(sentence) == sentence and not ACCESS.search(sentence)
+            if ((PRICE.search(sentence) and not financial_metric) or ACCESS.search(sentence)
+                    or (RESTRICT.search(sentence) and not complete)):
                 continue
             quote = _short_quote(sentence)
-            if not quote or "?" in quote or len(quote.split()) < 8 or PROMOTIONAL.search(quote):
+            if (not quote or "?" in quote or quote.endswith(":") or len(quote.split()) < 8
+                    or PROMOTIONAL.search(quote) or re.search(r"\b(?:knows how this goes|the next thing|here are|these categories)\b", quote, re.I)):
                 continue
             overlap = len(topic & _words(quote))
             capability = bool(CAPABILITY.search(quote))
@@ -381,6 +399,8 @@ def verify_selected(stories: list[Story], settings: Settings, client: httpx.Clie
                 why = "Explore whether interactive world models could support prototyping, games, or simulation; check access limits before committing."
             elif details.get("access_conditions_retained") and re.search(r"\bautonomous agent\b", " ".join(blocks[:10]), re.I):
                 why = "Consider which workflows an autonomous agent could handle, what approvals it needs, and whether your team is eligible."
+            elif details.get("access_conditions_retained") and re.search(r"\b(?:code review|pull requests?)\b", " ".join(blocks[:8]), re.I):
+                why = "Consider where automated code review could save time; check plan eligibility, beta limits, and approval policies before enabling it."
             if "major_corporate_development" in assess(article, now).signals:
                 if re.search(r"\b(?:ipo|initial public offering|funding round)\b", title, re.I):
                     why = "Watch how new capital and public-market scrutiny could affect the company's AI investment, roadmap, and commercial commitments."
