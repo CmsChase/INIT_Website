@@ -166,6 +166,7 @@ name = "TechCrunch AI"
 url = "https://techcrunch.com/category/artificial-intelligence/feed/"
 allowed_hosts = ["techcrunch.com"]
 tier = "reporting"
+verify_reporting_body = true
 weight = 1.0
 
 [[sources]]
@@ -174,6 +175,7 @@ name = "The Verge AI"
 url = "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml"
 allowed_hosts = ["www.theverge.com", "theverge.com"]
 tier = "reporting"
+verify_reporting_body = true
 weight = 1.0
 
 [[sources]]
@@ -182,6 +184,7 @@ name = "Ars Technica AI"
 url = "https://arstechnica.com/ai/feed/"
 allowed_hosts = ["arstechnica.com"]
 tier = "reporting"
+verify_reporting_body = true
 weight = 1.0
 
 [[sources]]

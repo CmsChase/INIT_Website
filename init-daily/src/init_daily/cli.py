@@ -103,16 +103,20 @@ def execute(args) -> int:
                 if "message_id" in report:
                     stream.write(f"Discord confirmed message ID `{report['message_id']}`.\n\n")
                 if report["status"] == "insufficient_verified_news":
-                    stream.write("Too few stories passed primary-source checks. Discord was not contacted. See `run.json` for the withholding reasons.\n\n")
+                    stream.write("Too few stories passed source-body checks. Discord was not contacted. See `run.json` for the withholding reasons.\n\n")
                 if "processing" in report:
                     stream.write("### Processing diagnostics\n\n```json\n")
                     stream.write(json.dumps(report["processing"], indent=2) + "\n```\n\n")
                 if "verification" in report:
                     checks = report["verification"]
-                    stream.write(f"Primary checks retained **{checks['checked']}/{checks['requested']}** requested stories. "
+                    stream.write(f"Source-body checks retained **{checks['checked']}/{checks['requested']}** requested stories "
+                                 f"({checks.get('primary_checked', checks['checked'])} primary, {checks.get('reporting_checked', 0)} attributed reporting). "
                                  f"HTTP requests: {checks['http_requests']}. "
                                  f"Withholding reasons: `{json.dumps(checks['withheld_codes'])}`.\n\n")
                 stream.write((settings.output_dir / "briefing.md").read_text(encoding="utf-8"))
+        if args.publish and report["status"] == "insufficient_verified_news":
+            log.error("Publishing blocked: no adequate verified briefing. See the uploaded run.json; Discord was not contacted.")
+            return 2
     return 0
 
 

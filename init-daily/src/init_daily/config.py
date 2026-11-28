@@ -18,6 +18,7 @@ class Source:
     company: str = ""
     ai_focused: bool = True
     format: str = "rss"
+    verify_reporting_body: bool = False
 
 
 @dataclass(frozen=True)
@@ -104,4 +105,6 @@ def load_settings(path: Path) -> Settings:
             raise ValueError("Unknown source format")
         if not isinstance(source.company, str) or not isinstance(source.ai_focused, bool):
             raise ValueError("Invalid company or AI-focus metadata")
+        if not isinstance(source.verify_reporting_body, bool) or (source.verify_reporting_body and source.tier != "reporting"):
+            raise ValueError("Reporting-body verification is only available for explicitly trusted reporting sources")
     return settings

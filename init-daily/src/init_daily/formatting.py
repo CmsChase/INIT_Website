@@ -18,8 +18,9 @@ def discord_payload(stories: list[Story], date: str, now: datetime, mode: str) -
     for index, story in enumerate(stories, 1):
         article = story.article
         research = " · preliminary research" if is_research(article) else ""
+        headline = f"Report: {article.title}" if story.evidence_kind == "reporting" else article.title
         embeds.append({
-            "title": f"{index:02d} / {safe_text(article.title, 230)}",
+            "title": f"{index:02d} / {safe_text(headline, 230)}",
             "url": story.verified_url or article.url,
             "description": safe_text(story.summary, 400),
             "color": 0xB8F36B,

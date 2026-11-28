@@ -94,7 +94,7 @@ def run_pipeline(settings: Settings, history: History, client: httpx.Client, now
                                                alternates=tuple(alternates), previous=tuple(previous))
         report["verification"] = verification
         if verification["shortfall"]:
-            log.warning("Primary checks retained %s of %s requested stories; withholding reasons: %s",
+            log.warning("Source-body checks retained %s of %s requested stories; withholding reasons: %s",
                         len(stories), verification["requested"], verification["withheld_codes"])
     report.update(stories=len(stories), processing=ai_report)
     report["editorial"].update(
@@ -106,7 +106,7 @@ def run_pipeline(settings: Settings, history: History, client: httpx.Client, now
     if len(stories) < settings.min_stories:
         if report.get("verification", {}).get("withheld"):
             report["status"] = "insufficient_verified_news"
-            log.warning("Only %s stories passed primary-source checks; no Discord message prepared", len(stories))
+            log.warning("Only %s stories passed source-body checks; no Discord message prepared", len(stories))
         else:
             report["status"] = "insufficient_news"
         write_outputs(settings.output_dir, report)

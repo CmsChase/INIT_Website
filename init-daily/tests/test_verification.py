@@ -127,7 +127,8 @@ class VerificationTests(unittest.TestCase):
 
     def test_two_reports_of_one_primary_story_are_not_repeated(self):
         first = self.story("Google releases Gemini 4 Carbon", "https://www.theverge.com/report", "Now available to the general public.", "verge-ai", "reporting", (GOOGLE,))
-        second = replace(first, article=replace(first.article, url="https://techcrunch.com/another-report"))
+        second = replace(first, article=replace(first.article, url="https://techcrunch.com/another-report",
+                                               source_id="techcrunch-ai", source_name="TechCrunch AI"))
         raw = page("Gemini 4 Carbon is now available", *self.access_body())
         with httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(200, content=raw))) as client:
             stories, audit = verify_selected([first, second], self.settings, client, NOW)

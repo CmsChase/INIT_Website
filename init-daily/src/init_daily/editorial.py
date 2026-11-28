@@ -25,8 +25,9 @@ COMPANIES = {
 AI = r"\b(ai|artificial intelligence|model(?:s)?|llm(?:s)?|chatgpt|claude|gemini|grok|deepseek|copilot|agent(?:s|ic)?|robot(?:s|ics|ic)?|inference|generative|gpu|llama|qwen)\b"
 LAUNCH = r"\b(introduc(?:ing|es)|launch(?:es|ed)?|unveil(?:s|ed)?|releas(?:e|es|ed)|roll(?:s|ing)? out|new features?|new capabilities|new (?:flagship |frontier )?model|now available|can now|gains?|gives? .{0,60}\bability|upgrade(?:s)?|expand(?:s|ed)?|adds?|bring(?:s|ing)?|debuts?)\b"
 STRATEGY = r"\b(partnership|partner(?:s|ing|ed)? (?:with|to)|acquir(?:e[sd]?|ing)|acquisition|merger|strategic|agreement|integration|integrat(?:e[sd]?|ing)|investment|ipo|public offering)\b"
-SECURITY = r"\b(security|breach|leaks?|leaked|regulation|oversight|safety law|ai act|ban(?:ned)?)\b"
-CORPORATE = r"\b(leadership transition|resign(?:s|ed|ation)?|steps? down|exit|departure|financial results|earnings|export control|supply chain (?:partners|commitments)|national security|ipo|initial public offering|funding round)\b"
+SECURITY = r"\b(security|breach|leaks?|leaked|regulation|oversight|safety law|ai act|ban(?:ned)?|authoriz(?:es|ed|ation)|regulators?|state ags|attorneys general)\b"
+CORPORATE = r"\b(leadership transition|resign(?:s|ed|ation)?|steps? down|exit|departure|financial results|earnings|export control|supply chain (?:partners|commitments)|national security|ipo|initial public offering|funding round|credit (?:rating|downgrade)|governance review)\b"
+ACCESS_CHANGE = r"\b(?:usage (?:limits?|meters?|allowances?)|rate limits?|quotas?|hit (?:their )?limits|shared (?:limits?|allowance))\b"
 LEADERSHIP_ROLE = r"\b(?:ceo|chief executive)\b"
 LEADERSHIP_CHANGE = r"\b(?:transition|appoint(?:s|ed)?|nam(?:es|ed)|replac(?:e[sd]?|ing)|oust(?:s|ed)?|fir(?:es|ed)|retir(?:es|ed|ement)|quits?|succeeds?)\b|\bnew (?:ceo|chief executive)\b"
 PROFILE = r"\b(?:podcast episode|interview|dialogues|conversation with|opening bell|highlights from|event recap|summit recap|curiosity and creativity)\b"
@@ -83,6 +84,7 @@ def assess(article: Article, now: datetime) -> Assessment:
                   re.search(r"\b(?:we(?:['’]re| are)? introducing|we(?:['’]re| are)? launching|we introduce|today we(?:['’]re| are)? releasing|(?:gemini|chatgpt|claude|copilot|grok) can now|(?:gemini|chatgpt|claude|copilot|grok)[^.!?]{0,45} now (?:has|supports|automates|handles))\b",
                             article.excerpt[:500], re.I)))
     security = bool(re.search(SECURITY, title))
+    access_change = bool(names and re.search(ACCESS_CHANGE, title))
     amount = 2.0 + article.weight
     amount += {"official": 1.7, "reporting": .6, "ecosystem": .2, "releases": -2.0}.get(article.source_tier, 0)
     age = max(0, (now - article.published_at).total_seconds() / 3600)
@@ -105,6 +107,9 @@ def assess(article: Article, now: datetime) -> Assessment:
         amount += 2.0
         category = "industry"
         signals.append("security_or_regulation")
+    if access_change:
+        amount += 3
+        signals.append("access_or_usage_change")
     if re.search(r"\b(new (?:flagship |frontier |foundation |ai )?models?|gpt[- .]?\d|claude (?:opus|sonnet|haiku|fable|mythos)|(?:gemini|genie) \d|grok \d|llama \d|qwen[- .]?\d|deepseek[- .]?[vr]\d)", title) and launch:
         amount += 3
         category = "models"

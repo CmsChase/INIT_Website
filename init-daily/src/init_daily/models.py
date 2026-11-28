@@ -115,6 +115,7 @@ class Story:
     mode: str
     verified_url: str = ""
     verified_source: str = ""
+    evidence_kind: str = ""
 
 
 def is_research(article: Article) -> bool:

@@ -119,6 +119,7 @@ class QuietDayTests(unittest.TestCase):
 
     def test_unverifiable_selection_cannot_be_replaced_with_official_interview(self):
         initial = self.article("Google rolls out a new AI search homepage", source_id="ars-ai", tier="reporting")
+        initial = replace(initial, url="https://arstechnica.com/ai/2026/11/google-ai-search-homepage")
         interview = self.article("Walter Isaacson on curiosity and creativity in the AI age.")
         calls = []
         def handler(request):
@@ -130,7 +131,7 @@ class QuietDayTests(unittest.TestCase):
                                               self.settings, client, NOW, alternates=(interview,))
         self.assertEqual(stories, [])
         self.assertEqual(len(calls), 1)
-        self.assertEqual(audit["withheld_codes"], {"primary_reference_missing": 1, "editorial_below_threshold": 1})
+        self.assertEqual(audit["withheld_codes"], {"primary_topic_mismatch": 1, "editorial_below_threshold": 1})
 
     def test_rhetorical_question_cannot_be_a_factual_summary(self):
         article = self.article("Introducing a new AI capability")
