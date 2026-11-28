@@ -1076,6 +1076,91 @@
       },
       "message_id": "1574722050918973513",
       "resolved_at": "2026-11-24T09:43:14.021690+00:00"
+    },
+    {
+      "id": "844324b0-3479-47ea-927d-cd6776ac4c81",
+      "date": "2026-11-28",
+      "status": "pending",
+      "created_at": "2026-11-28T11:25:53.215404+00:00",
+      "stories": [
+        {
+          "id": "33b3d08d99aeb285e8bea951",
+          "url": "https://techcrunch.com/2026/11/26/nvidia-hits-pause-on-chip-shipments-to-southeast-asia",
+          "title": "Nvidia hits pause on chip shipments to Southeast Asia",
+          "primary_url": "https://techcrunch.com/2026/11/26/nvidia-hits-pause-on-chip-shipments-to-southeast-asia"
+        },
+        {
+          "id": "3a73412d0df0bb71aee562a4",
+          "url": "https://techcrunch.com/2026/11/25/openai-says-heavy-chatgpt-users-may-hit-limits-sooner-as-it-merges-chat-and-work",
+          "title": "OpenAI says heavy ChatGPT users may hit limits sooner as it merges Chat and Work",
+          "primary_url": "https://techcrunch.com/2026/11/25/openai-says-heavy-chatgpt-users-may-hit-limits-sooner-as-it-merges-chat-and-work"
+        },
+        {
+          "id": "77bb663b6361291f59eed3bc",
+          "url": "https://techcrunch.com/2026/11/25/sp-considers-nvidia-credit-downgrade-over-governance-and-key-man-risks",
+          "title": "S&P considers Nvidia credit downgrade over governance and ‘key man’ risks",
+          "primary_url": "https://techcrunch.com/2026/11/25/sp-considers-nvidia-credit-downgrade-over-governance-and-key-man-risks"
+        }
+      ],
+      "payload_sha256": "4fb40817282b442a1ac53ef7fee452f535270ef53c033e567d23973d0237bded",
+      "payload": {
+        "username": "INIT Daily",
+        "content": "**INIT:// DAILY**  /  2026-11-28\n3 signals for people who build.\n-# Source excerpts · AI selection",
+        "embeds": [
+          {
+            "title": "01 / Report: Nvidia hits pause on chip shipments to Southeast Asia",
+            "url": "https://techcrunch.com/2026/11/26/nvidia-hits-pause-on-chip-shipments-to-southeast-asia",
+            "description": "TechCrunch AI reports: Scope: for an unspecified period as it assesses whether its regional partners are meeting U.S. export requirements.",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Check whether supply disruptions could change hardware availability, regional access, or infrastructure plans.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "TechCrunch AI · reporting · 2026-11-26"
+            }
+          },
+          {
+            "title": "02 / Report: OpenAI says heavy ChatGPT users may hit limits sooner as it merges Chat and Work",
+            "url": "https://techcrunch.com/2026/11/25/openai-says-heavy-chatgpt-users-may-hit-limits-sooner-as-it-merges-chat-and-work",
+            "description": "TechCrunch AI reports: Under the new system, Chat and Work will share a single usage meter across ChatGPT. Access: to a small group of Pro subscribers",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Check eligibility and rollout scope before planning to use or recommend this capability.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "TechCrunch AI · reporting · 2026-11-25"
+            }
+          },
+          {
+            "title": "03 / Report: S&P considers Nvidia credit downgrade over governance and ‘key man’ risks",
+            "url": "https://techcrunch.com/2026/11/25/sp-considers-nvidia-credit-downgrade-over-governance-and-key-man-risks",
+            "description": "TechCrunch AI reports: S&P Global Ratings, one of the three major credit rating agencies, is considering downgrading Nvidia’s rating, citing concerns about the company’s management and governance practices.",
+            "color": 12120939,
+            "fields": [
+              {
+                "name": "Why it matters · editorial",
+                "value": "Watch whether credit and governance reviews could affect AI infrastructure financing and confidence in the company's commitments.",
+                "inline": false
+              }
+            ],
+            "footer": {
+              "text": "TechCrunch AI · reporting · 2026-11-25"
+            }
+          }
+        ],
+        "allowed_mentions": {
+          "parse": []
+        },
+        "flags": 4096
+      }
     }
   ]
 }
